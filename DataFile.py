@@ -1,5 +1,6 @@
 import h5py
 import numpy
+import os
 
 
 class DataFile:
@@ -12,7 +13,7 @@ class DataFile:
     def __init__(self, name):
         self.composite = False
         self.path = name
-        path = self.path.split("/")
+        path = os.path.split(self.path)
         self.name = path[len(path)-1]
         self.f = h5py.File(self.path)
 

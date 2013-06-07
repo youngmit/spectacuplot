@@ -41,29 +41,26 @@ class OpSetPlot(Frame):
         self.plot_set.pack(side=LEFT)
 
         # Spectrum plotting stuff
-        print self.spectra.get()
         self.spect_toggle = Checkbutton(bottom_frame, text="Plot Spectra",
                                         command=self.toggle_spectra,
                                         variable=self.spectra, onvalue=True,
                                         offvalue=False)
         self.spect_toggle.pack(side=LEFT)
-        print self.spectra.get()
 
     def toggle_spectra(self):
         if self.spectra.get():
             # Turn off spectra
-            print "spectra on"
             self.cid = self.plot_area.canvas.mpl_connect('button_press_event',
                                                          self)
         else:
             # Turn on spectra
-            print "spectra off"
             self.plot_area.canvas.mpl_disconnect(self.cid)
 
     # This is the spectrum plot function, which gets bound to click events on
     # the plot area.
     def __call__(self, event):
-        print "click event", event
+        if not event.dblclick:
+            return
         if self.w is None:
             self.w = Toplevel()
             self.pa = PlotArea(self.w)
@@ -78,10 +75,7 @@ class OpSetPlot(Frame):
         for e in reversed(erg):
             erg_w.append(e-prev_e)
             prev_e = e
-        print "erg", erg
         erg_w.reverse()
-        print erg_w
-        print sum(erg_w)
 
         # Build array
         set_name = self.plot_area.label.get()
