@@ -3,6 +3,47 @@ import numpy
 import os
 
 
+class DataTreeNode:
+    def __init__(self, f, name):
+        self.path = name
+        self.name = name.split('/')[-1]
+        self.children = []
+
+        # am I a group?
+        cls = f.get(self.path, getclass=True)
+
+        self.is_grp = (cls == h5py.Group)
+
+        if self.is_grp:
+            for child in f[self.path].keys():
+                if self.path == '/':
+                    new_name = self.path + child
+                else:
+                    new_name = self.path + '/' + child
+                # print "adding node for ", new_name
+                self.children.append(DataTreeNode(f, new_name))
+
+    def print_children(self, outp, ind):
+        if self.is_grp:
+            outp = outp + ind*' ' + self.name + '\n'
+            for child in self.children:
+                outp = child.print_children(outp, ind+2)
+        else:
+            outp = outp + ind*' ' + self.name + '\n'
+
+        return outp
+
+    def __str__(self):
+        ind = 0
+
+        outp = self.name + 'Tree Root:'
+        if self.is_grp:
+            ind = ind + 2
+            outp = self.print_children(outp, ind)
+
+        return outp
+
+
 class DataFile:
     name = ""
     path = ""
@@ -25,15 +66,21 @@ class DataFile:
                 self.n_proc = self.f['n_proc'].value[0]
                 self.composite = True
 
+        # Define f, the file object from which to find available datasets
         if self.composite:
             fname = self.path[:len(self.path)-3]
             fname = fname + '_n0' + '.h5'
             f = h5py.File(fname)
-            self.set_names = f.keys()
-            self.ng = f['ng'].value[0]
+
         else:
-            self.ng = self.f['ng'].value[0]
-            self.set_names = self.f.keys()
+            f = self.f
+
+        self.set_names = f.keys()
+        self.ng = f['ng'].value[0]
+
+        self.data = DataTreeNode(f, '/')
+
+        # print self.data
 
     def get_name(self, data_id):
         return self.set_names[data_id]

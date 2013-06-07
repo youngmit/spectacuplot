@@ -56,25 +56,39 @@ class PlotArea(Frame):
 
 class DataTree:
     items = []
-    file_id = []
-    data_id = []
 
     def __init__(self, master):
-        self.items = []
-        self.data = []
-
         self.tree = Treeview(master)
+        self.items = []
 
     def update(self, files):
         self.files = files
 
         for item in self.items:
             self.tree.delete(item)
-        self.data = []
 
-        for (i, datafile) in enumerate(self.files):
-            self.items.append(self.tree.insert("", "end", text=datafile.name))
+        for datafile in self.files:
+            self.add_file(datafile)
 
-            for (j, set_name) in enumerate(datafile.set_names):
-                self.tree.insert(self.items[len(self.items)-1], "end",
-                                 text=set_name, values=(i, j))
+        self.items = []
+
+    def add_file(self, f):
+        file_id = self.tree.insert("", "end", text=f.name)
+        self.items.append(file_id)
+
+        self.add_node(file_id, f.data)
+            # for (j, set_name) in enumerate(datafile.set_names):
+            #     self.tree.insert(self.items[len(self.items)-1], "end",
+            #                      text=set_name, values=(i, j))
+
+    def add_node(self, p, node):
+        print p
+        if node.name != '':
+            node_id = self.tree.insert(p, "end", text=node.name, values=(node.path))
+            self.items.append(node_id)
+        else:
+            node_id = p
+
+        if node.is_grp:
+            for child in node.children:
+                self.add_node(node_id, child)
