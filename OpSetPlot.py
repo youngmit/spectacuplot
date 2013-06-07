@@ -20,21 +20,10 @@ class OpSetPlot(Frame):
         bottom_frame = Frame(self)
         bottom_frame.pack()
 
-        # File list
-        file_frame = Frame(top_frame)
-        file_frame.pack(side=LEFT, fill=Y, expand=1)
-        Label(file_frame, text="Opened Files:").pack(side=TOP)
-        self.file_list = Listbox(file_frame, selectmode=SINGLE)
-        self.file_list.bind("<Double-Button-1>", self.select_file)
-        self.file_list.pack(side=TOP)
-
-        # Data selector
-        data_frame = Frame(top_frame)
-        data_frame.pack(side=LEFT, fill=Y, expand=1)
-        Label(data_frame, text="Datasets:").pack(side=TOP)
-        self.data_list = Listbox(data_frame)
-        self.data_list.bind("<Double-Button-1>", self.plot)
-        self.data_list.pack(side=TOP)
+        # File Tree
+        self.file_tree = DataTree(top_frame)
+        self.file_tree.tree.pack(fill=BOTH, expand=1)
+        self.file_tree.tree.bind("<Double-Button-1>", self.plot)
 
         self.plot_set = Button(bottom_frame, text="Plot Dataset",
                                command=self.plot)
@@ -107,9 +96,17 @@ class OpSetPlot(Frame):
             self.data_list.insert(END, dset)
 
     def plot(self, dummy=-1):
-        data_id = self.data_list.curselection()[0]
 
-        data = self.files[self.file_id].get_data(data_id)
-        name = self.files[self.file_id].get_name(data_id)
+        item = self.file_tree.tree.selection()[0]
+        info = self.file_tree.tree.item(item)
+        file_id = info['values'][0]
+        set_path = info['values'][1]
+
+        data = self.files[file_id].get_data(set_path)
+        name = set_path.split('/')[-1]
 
         self.plot_area.plot(data, name)
+
+    def update(self, files):
+        self.files = files
+        self.file_tree.update(self.files)

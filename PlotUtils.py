@@ -29,8 +29,12 @@ class PlotArea(Frame):
     def plot(self, data, name='No Name'):
         self.label.set(name)
         self.a.clear()
-        self.img = self.a.imshow(data[:, :, 0], interpolation="nearest",
-                                 origin="lower")
+        if data.ndim == 3:
+            self.img = self.a.imshow(data[:, :, 0], interpolation="nearest",
+                                     origin="lower")
+        else:
+            self.img = self.a.imshow(data[:, :], interpolation="nearest",
+                                     origin="lower")
         if(self.cbar is None):
             self.cbar = self.f.colorbar(self.img)
         else:
@@ -67,28 +71,28 @@ class DataTree:
         for item in self.items:
             self.tree.delete(item)
 
-        for datafile in self.files:
-            self.add_file(datafile)
+        for (i, datafile) in enumerate(self.files):
+            self.add_file(datafile, i)
 
         self.items = []
 
-    def add_file(self, f):
+    def add_file(self, f, f_id):
         file_id = self.tree.insert("", "end", text=f.name)
         self.items.append(file_id)
 
-        self.add_node(file_id, f.data)
+        self.add_node(file_id, f.data, f_id)
             # for (j, set_name) in enumerate(datafile.set_names):
             #     self.tree.insert(self.items[len(self.items)-1], "end",
             #                      text=set_name, values=(i, j))
 
-    def add_node(self, p, node):
-        print p
+    def add_node(self, p, node, f_id):
         if node.name != '':
-            node_id = self.tree.insert(p, "end", text=node.name, values=(node.path))
+            node_id = self.tree.insert(p, "end", text=node.name,
+                                       values=(f_id, node.path))
             self.items.append(node_id)
         else:
             node_id = p
 
         if node.is_grp:
             for child in node.children:
-                self.add_node(node_id, child)
+                self.add_node(node_id, child, f_id)

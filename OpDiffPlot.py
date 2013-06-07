@@ -37,14 +37,14 @@ class OpDiffPlot(Frame):
         item = self.left_tree.tree.selection()[0]
         info = self.left_tree.tree.item(item)
         file_id = info['values'][0]
-        set_id = info['values'][1]
-        data1 = self.files[file_id].get_data(set_id)
+        set_path = info['values'][1]
+        data1 = self.files[file_id].get_data(set_path)
 
         item = self.right_tree.tree.selection()[0]
         info = self.right_tree.tree.item(item)
         file_id = info['values'][0]
-        set_id = info['values'][1]
-        data2 = self.files[file_id].get_data(set_id)
+        set_path = info['values'][1]
+        data2 = self.files[file_id].get_data(set_path)
 
         data = (data1-data2)/data1
         self.plot_area.plot(data)

@@ -82,9 +82,6 @@ class DataFile:
 
         # print self.data
 
-    def get_name(self, data_id):
-        return self.set_names[data_id]
-
     def get_erg(self):
         if self.composite:
             fname = self.path[:len(self.path)-3]
@@ -95,10 +92,8 @@ class DataFile:
             return self.f['eubounds'].value
 
     def get_data(self, data_id):
-        if type(data_id) is int:
-            data_name = self.set_names[data_id]
-        else:
-            data_name = data_id
+        data_name = data_id
+
         if self.composite:
             # Blob all of the data together
             sub_data = []

@@ -64,8 +64,7 @@ class App:
     def open(self, file_name):
         f = DataFile(file_name)
         self.opened_files.append(f)
-        file_path = file_name.split('/')
-        self.plot_set.file_list.insert(END, file_path[len(file_path)-1])
+        self.plot_set.update(self.opened_files)
         self.diff_frame.update(self.opened_files)
 
 
