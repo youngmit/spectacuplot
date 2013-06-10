@@ -59,8 +59,6 @@ class PlotArea(Frame):
 
 
 class DataTree:
-    items = []
-
     def __init__(self, master):
         self.tree = Treeview(master)
         self.items = []
@@ -68,22 +66,23 @@ class DataTree:
     def update(self, files):
         self.files = files
 
-        for item in self.items:
+        # reversing, since removing a node with children removes the children as
+        # well. there might be a cleaner way to do this by clearing each of the
+        # file nodes, but that might add more burden to the garbage collector
+        # down the line.
+        for item in reversed(self.items):
             self.tree.delete(item)
+
+        self.items = []
 
         for (i, datafile) in enumerate(self.files):
             self.add_file(datafile, i)
-
-        self.items = []
 
     def add_file(self, f, f_id):
         file_id = self.tree.insert("", "end", text=f.name)
         self.items.append(file_id)
 
         self.add_node(file_id, f.data, f_id)
-            # for (j, set_name) in enumerate(datafile.set_names):
-            #     self.tree.insert(self.items[len(self.items)-1], "end",
-            #                      text=set_name, values=(i, j))
 
     def add_node(self, p, node, f_id):
         if node.name != '':
@@ -96,3 +95,30 @@ class DataTree:
         if node.is_grp:
             for child in node.children:
                 self.add_node(node_id, child, f_id)
+
+
+class AxialSlider(Frame):
+    def __init__(self, master):
+        Frame.__init__(self, master)
+
+        self.slider = Scale(self, from_=1, to=1, orient=HORIZONTAL)
+        self.disable()
+
+        self.slider.pack(expand=1, fill=BOTH)
+
+    def update(self, from_, to):
+        self.slider.config(from_=from_, to=to, state=NORMAL)
+        self.enable()
+
+    def get(self):
+        return self.slider.get()
+
+    def enable(self):
+        self.slider.config(state=NORMAL, fg='#000', sliderrelief=RAISED)
+
+    def disable(self):
+        self.slider.config(state=DISABLED, fg='#888', sliderrelief=FLAT)
+
+
+class Error(Exception):
+    pass

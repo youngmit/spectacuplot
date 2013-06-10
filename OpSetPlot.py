@@ -18,23 +18,33 @@ class OpSetPlot(Frame):
         top_frame.pack()
 
         bottom_frame = Frame(self)
-        bottom_frame.pack()
+        bottom_frame.pack(expand=1, fill=BOTH)
+
+        plotctrl_frame = Frame(bottom_frame)
+        plotctrl_frame.pack(side=TOP)
+
+        slider_frame = Frame(bottom_frame)
+        slider_frame.pack(side=TOP, expand=1, fill=BOTH)
 
         # File Tree
         self.file_tree = DataTree(top_frame)
         self.file_tree.tree.pack(fill=BOTH, expand=1)
         self.file_tree.tree.bind("<Double-Button-1>", self.plot)
 
-        self.plot_set = Button(bottom_frame, text="Plot Dataset",
+        self.plot_set = Button(plotctrl_frame, text="Plot Dataset",
                                command=self.plot)
         self.plot_set.pack(side=LEFT)
 
         # Spectrum plotting stuff
-        self.spect_toggle = Checkbutton(bottom_frame, text="Plot Spectra",
+        self.spect_toggle = Checkbutton(plotctrl_frame, text="Plot Spectra",
                                         command=self.toggle_spectra,
                                         variable=self.spectra, onvalue=True,
                                         offvalue=False)
         self.spect_toggle.pack(side=LEFT)
+
+        Label(slider_frame, text="Axial plane:").pack(side=TOP)
+        self.axial = AxialSlider(slider_frame)
+        self.axial.pack(side=BOTTOM, expand=1, fill=BOTH)
 
     def toggle_spectra(self):
         if self.spectra.get():
@@ -106,6 +116,10 @@ class OpSetPlot(Frame):
         set_path = info['values'][1]
 
         data = self.files[file_id].get_data(set_path)
+        if numpy.ndim(data) == 3:
+            n_axial = numpy.shape(data)[0]
+            self.axial.update(1, n_axial)
+            data = data[self.axial.get()-1, :, :]
         name = set_path.split('/')[-1]
 
         self.plot_area.plot(data, name)
