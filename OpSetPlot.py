@@ -16,7 +16,7 @@ class OpSetPlot(Frame):
         self.current_plane = 1
 
         top_frame = Frame(self)
-        top_frame.pack()
+        top_frame.pack(expand=1, fill=BOTH)
 
         bottom_frame = Frame(self)
         bottom_frame.pack(expand=1, fill=BOTH)
@@ -31,6 +31,8 @@ class OpSetPlot(Frame):
         scale_frame.pack(side=TOP, expand=1, fill=BOTH)
 
         # File Tree
+        Label(top_frame, text="File/Dataset:").pack(anchor=W)
+
         self.file_tree = DataTree(top_frame)
         self.file_tree.tree.pack(fill=BOTH, expand=1)
         self.file_tree.tree.bind("<Double-Button-1>", self.plot)
@@ -47,11 +49,12 @@ class OpSetPlot(Frame):
         self.spect_toggle.pack(side=LEFT)
 
         # Axial Slider
-        Label(slider_frame, text="Axial plane:").pack(side=TOP)
+        Label(slider_frame, text="Axial plane:").pack(anchor=W)
         self.axial = AxialSlider(slider_frame, command=self.update_plot)
         self.axial.pack(side=BOTTOM, expand=1, fill=BOTH)
 
         # Scale selector
+        Label(scale_frame, text="Color Scale:").pack(anchor=W)
         self.scale_mode = StringVar()
         self.scale_mode.set('active')
         self.scale_plane = StringVar()
@@ -126,9 +129,7 @@ class OpSetPlot(Frame):
             self.data_list.insert(END, dset)
 
     def update_plot(self, plane):
-        print "update plot"
         if self.current_plane != self.axial.get():
-            print 'new plane', plane
             self.plot()
 
     def plot(self, dummy=-1):

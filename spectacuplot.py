@@ -20,19 +20,22 @@ class App(Tk):
 
     def __init__(self):
         Tk.__init__(self)
-        main_frame = Frame(self)
-        main_frame.pack(fill=BOTH, expand=1)
+        # main_frame = Frame(self)
+        # main_frame.pack(fill=BOTH, expand=1)
 
-        control_frame = Frame(main_frame)
-        control_frame.pack(side=LEFT, fill=Y, expand=1)
+        left_frame = Frame(self)
+
+        control_frame = Frame(left_frame)
+        left_frame.pack(side=LEFT, fill=Y)
+        control_frame.pack(anchor=N)
 
         # Menu bar
-        mb = Menu(main_frame)
+        mb = Menu(self)
         file_menu = Menu(mb)
         file_menu.add_command(label='Open...', command=self.open_dialog,
                               accelerator='Ctrl-O')
         file_menu.add_command(label='Close All Files', command=self.close_files)
-        file_menu.add_command(label='Exit', command=main_frame.quit)
+        file_menu.add_command(label='Exit', command=self.quit)
 
         self.bind_all("<Control-o>", self.open_dialog)
 
@@ -46,8 +49,8 @@ class App(Tk):
         nb.pack(expand=1, fill=BOTH)
 
         # Plot Area
-        self.plot_frame = PlotArea(main_frame)
-        self.plot_frame.pack(side=RIGHT, fill=BOTH, expand=1)
+        self.plot_frame = PlotArea(self)
+        self.plot_frame.pack(side=LEFT, fill=BOTH, expand=1)
 
         # Plot Sets
         self.plot_set = OpSetPlot(nb, self.opened_files, self.plot_frame)
