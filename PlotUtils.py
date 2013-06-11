@@ -26,15 +26,15 @@ class PlotArea(Frame):
         self.canvas.get_tk_widget().pack(fill=BOTH, expand=1)
         self.toolbar = NavigationToolbar2TkAgg(self.canvas, self)
 
-    def plot(self, data, name='No Name'):
+    def plot(self, data, name='No Name', min_=None, max_=None):
         self.label.set(name)
         self.a.clear()
         if data.ndim == 3:
             self.img = self.a.imshow(data[:, :, 0], interpolation="nearest",
-                                     origin="lower")
+                                     origin="lower", vmin=min_, vmax=max_)
         else:
             self.img = self.a.imshow(data[:, :], interpolation="nearest",
-                                     origin="lower")
+                                     origin="lower", vmin=min_, vmax=max_)
         if(self.cbar is None):
             self.cbar = self.f.colorbar(self.img)
         else:
@@ -98,10 +98,11 @@ class DataTree:
 
 
 class AxialSlider(Frame):
-    def __init__(self, master):
+    def __init__(self, master, command=None):
         Frame.__init__(self, master)
 
-        self.slider = Scale(self, from_=1, to=1, orient=HORIZONTAL)
+        self.slider = Scale(self, from_=1, to=1, orient=HORIZONTAL,
+                            command=command)
         self.disable()
 
         self.slider.pack(expand=1, fill=BOTH)

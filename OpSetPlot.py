@@ -13,6 +13,7 @@ class OpSetPlot(Frame):
         self.plot_area = plot_area
         self.spectra = BooleanVar()
         self.spectra.set(False)
+        self.current_plane = 1
 
         top_frame = Frame(self)
         top_frame.pack()
@@ -25,6 +26,9 @@ class OpSetPlot(Frame):
 
         slider_frame = Frame(bottom_frame)
         slider_frame.pack(side=TOP, expand=1, fill=BOTH)
+
+        scale_frame = Frame(bottom_frame)
+        scale_frame.pack(side=TOP, expand=1, fill=BOTH)
 
         # File Tree
         self.file_tree = DataTree(top_frame)
@@ -42,9 +46,22 @@ class OpSetPlot(Frame):
                                         offvalue=False)
         self.spect_toggle.pack(side=LEFT)
 
+        # Axial Slider
         Label(slider_frame, text="Axial plane:").pack(side=TOP)
-        self.axial = AxialSlider(slider_frame)
+        self.axial = AxialSlider(slider_frame, command=self.update_plot)
         self.axial.pack(side=BOTTOM, expand=1, fill=BOTH)
+
+        # Scale selector
+        self.scale_mode = StringVar()
+        self.scale_mode.set('active')
+        self.scale_plane = StringVar()
+        Radiobutton(scale_frame, text="Active Plane", variable=self.scale_mode,
+                    value='active').pack(anchor=W)
+        # Radiobutton(scale_frame, text="This Plane", variable=self.scale_mode,
+        #             value='fix').pack(anchor=W)
+        Label(scale_frame, textvariable=self.scale_plane)
+        Radiobutton(scale_frame, text="Global", variable=self.scale_mode,
+                    value='global').pack(anchor=W)
 
     def toggle_spectra(self):
         if self.spectra.get():
@@ -108,21 +125,42 @@ class OpSetPlot(Frame):
         for i, dset in enumerate(datasets):
             self.data_list.insert(END, dset)
 
-    def plot(self, dummy=-1):
+    def update_plot(self, plane):
+        print "update plot"
+        if self.current_plane != self.axial.get():
+            print 'new plane', plane
+            #self.plot()
 
+    def plot(self, dummy=-1):
         item = self.file_tree.tree.selection()[0]
         info = self.file_tree.tree.item(item)
         file_id = info['values'][0]
         set_path = info['values'][1]
 
         data = self.files[file_id].get_data(set_path)
+
+        min_ = None
+        max_ = None
+
+        # If we are doing global data scale, grab the scale bounds from the 3D
+        # data before we flatten it. The other options will be taken care of
+        # later.
+        if self.scale_mode.get() == 'global':
+            min_ = numpy.min(numpy.min(numpy.min(data)))
+            max_ = numpy.max(numpy.max(numpy.max(data)))
+
         if numpy.ndim(data) == 3:
-            n_axial = numpy.shape(data)[0]
-            self.axial.update(1, n_axial)
-            data = data[self.axial.get()-1, :, :]
+            shape = numpy.shape(data)
+            if shape[2] > 1:
+                n_axial = shape[0]
+                self.axial.update(1, n_axial)
+                self.current_plane = self.axial.get()
+                data = data[self.current_plane-1, :, :]
+            else:
+                data = data[:, :, 0]
         name = set_path.split('/')[-1]
 
-        self.plot_area.plot(data, name)
+        self.plot_area.plot(data, name, min_, max_)
 
     def update(self, files):
         self.files = files
