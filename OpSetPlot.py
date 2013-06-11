@@ -129,7 +129,7 @@ class OpSetPlot(Frame):
         print "update plot"
         if self.current_plane != self.axial.get():
             print 'new plane', plane
-            #self.plot()
+            self.plot()
 
     def plot(self, dummy=-1):
         item = self.file_tree.tree.selection()[0]
