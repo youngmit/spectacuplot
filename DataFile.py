@@ -105,6 +105,7 @@ class DataFile:
 
             # for now, flatten the proc_map to a 2d thing
             proc_map = self.proc_map[0]
+            # print proc_map
             rows = []
             for row in xrange(proc_map.shape[1]):
                 row_data = []
@@ -117,3 +118,17 @@ class DataFile:
 
         else:
             return self.f[data_name].value
+
+    def get_data_2d(self, data_id):
+        data = self.get_data(data_id)
+        if numpy.ndim(data) == 3:
+            shape = numpy.shape(data)
+            if shape[2] > 1:
+                n_axial = shape[0]
+                self.axial.update(1, n_axial)
+                self.current_plane = self.axial.get()
+                data = data[self.current_plane-1, :, :]
+            else:
+                data = data[:, :, 0]
+
+        return data

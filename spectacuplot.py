@@ -3,6 +3,7 @@ import matplotlib
 matplotlib.use('TkAgg')
 
 import sys
+import os
 from Tkinter import *
 from tkFileDialog import askopenfilename
 
@@ -20,6 +21,12 @@ class App(Tk):
 
     def __init__(self):
         Tk.__init__(self)
+
+        ico = PhotoImage(file=os.path.dirname(__file__)+"/icon.png")
+        self.call('wm', 'iconphoto', self._w, ico)
+        self.call
+
+        self.title("Spectacuplot!")
         # main_frame = Frame(self)
         # main_frame.pack(fill=BOTH, expand=1)
 
@@ -81,5 +88,6 @@ app = App()
 
 for i in xrange(1, len(sys.argv)):
     app.open(sys.argv[i])
+
 
 app.mainloop()

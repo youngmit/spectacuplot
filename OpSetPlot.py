@@ -42,11 +42,13 @@ class OpSetPlot(Frame):
         self.plot_set.pack(side=LEFT)
 
         # Spectrum plotting stuff
-        self.spect_toggle = Checkbutton(plotctrl_frame, text="Plot Spectra",
-                                        command=self.toggle_spectra,
-                                        variable=self.spectra, onvalue=True,
-                                        offvalue=False)
-        self.spect_toggle.pack(side=LEFT)
+        self.pick_mode = StringVar()
+        self.pick_mode.set('value')
+
+        Radiobutton(plotctrl_frame, text="Value", variable=self.pick_mode,
+                    value='value').pack(side=TOP)
+        Radiobutton(plotctrl_frame, text="Spectra", variable=self.pick_mode,
+                    value='spectra').pack(side=TOP)
 
         # Axial Slider
         Label(slider_frame, text="Axial plane:").pack(anchor=W)
@@ -59,12 +61,25 @@ class OpSetPlot(Frame):
         self.scale_mode.set('active')
         self.scale_plane = StringVar()
         Radiobutton(scale_frame, text="Active Plane", variable=self.scale_mode,
-                    value='active').pack(anchor=W)
-        # Radiobutton(scale_frame, text="This Plane", variable=self.scale_mode,
-        #             value='fix').pack(anchor=W)
-        Label(scale_frame, textvariable=self.scale_plane)
+                    value='active', command=self.change_scale_mode).pack(anchor=W)
         Radiobutton(scale_frame, text="Global", variable=self.scale_mode,
-                    value='global').pack(anchor=W)
+                    value='global', command=self.change_scale_mode).pack(anchor=W)
+        Radiobutton(scale_frame, text="Manual", variable=self.scale_mode,
+                    value='manual', command=self.change_scale_mode).pack(anchor=W)
+        self.scale_min = StringVar()
+        self.scale_max = StringVar()
+        self.scale_min_entry = LabeledEntry(self, text="Min:", width=10,
+            textvariable=self.scale_min)
+        self.scale_min_entry.pack(side=LEFT)
+        self.scale_min_entry.disable()
+        self.scale_max_entry = LabeledEntry(self, text="Max:", width=10,
+            textvariable=self.scale_max)
+        self.scale_max_entry.pack(side=LEFT)
+        self.scale_max_entry.disable()
+
+        # Register plot with callback
+        self.cid = self.plot_area.canvas.mpl_connect('button_press_event',
+                                                     self)
 
     def toggle_spectra(self):
         if self.spectra.get():
@@ -75,11 +90,25 @@ class OpSetPlot(Frame):
             # Turn on spectra
             self.plot_area.canvas.mpl_disconnect(self.cid)
 
-    # This is the spectrum plot function, which gets bound to click events on
+    # This is the plot pick function, which gets bound to click events on
     # the plot area.
     def __call__(self, event):
         if not event.dblclick:
             return
+        if self.pick_mode.get() == 'spectra':
+            self.add_spectrum(event)
+        elif self.pick_mode.get() == 'value':
+            x = int(event.xdata)
+            y = int(event.ydata)
+            item = self.file_tree.tree.selection()[0]
+            info = self.file_tree.tree.item(item)
+            file_id = info['values'][0]
+            set_path = info['values'][1]
+
+            data = self.files[file_id].get_data_2d(set_path)
+            print x, y, data[y, x]
+
+    def add_spectrum(self, event):
         if self.w is None:
             self.w = Toplevel()
             self.pa = PlotArea(self.w)
@@ -119,6 +148,14 @@ class OpSetPlot(Frame):
         self.w.destroy()
         self.w = None
 
+    def change_scale_mode(self):
+        if self.scale_mode.get() == 'manual':
+            self.scale_min_entry.enable()
+            self.scale_max_entry.enable()
+        else:
+            self.scale_min_entry.disable()
+            self.scale_max_entry.disable()
+
     def select_file(self, file_id=-1):
         file_id = self.file_list.curselection()[0]
         self.file_id = file_id
@@ -138,7 +175,7 @@ class OpSetPlot(Frame):
         file_id = info['values'][0]
         set_path = info['values'][1]
 
-        data = self.files[file_id].get_data(set_path)
+        data = self.files[file_id].get_data_2d(set_path)
 
         min_ = None
         max_ = None
@@ -149,16 +186,10 @@ class OpSetPlot(Frame):
         if self.scale_mode.get() == 'global':
             min_ = numpy.min(numpy.min(numpy.min(data)))
             max_ = numpy.max(numpy.max(numpy.max(data)))
+        elif self.scale_mode.get() == 'manual':
+            min_ = float(self.scale_min.get())
+            max_ = float(self.scale_max.get())
 
-        if numpy.ndim(data) == 3:
-            shape = numpy.shape(data)
-            if shape[2] > 1:
-                n_axial = shape[0]
-                self.axial.update(1, n_axial)
-                self.current_plane = self.axial.get()
-                data = data[self.current_plane-1, :, :]
-            else:
-                data = data[:, :, 0]
         name = set_path.split('/')[-1]
 
         self.plot_area.plot(data, name, min_, max_)

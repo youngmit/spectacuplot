@@ -30,10 +30,10 @@ class PlotArea(Frame):
         self.label.set(name)
         self.a.clear()
         if data.ndim == 3:
-            self.img = self.a.imshow(data[:, :, 0], interpolation="nearest",
+            self.img = self.a.imshow(data[:, :, 0], interpolation="none",
                                      origin="lower", vmin=min_, vmax=max_)
         else:
-            self.img = self.a.imshow(data[:, :], interpolation="nearest",
+            self.img = self.a.imshow(data[:, :], interpolation="none",
                                      origin="lower", vmin=min_, vmax=max_)
         if(self.cbar is None):
             self.cbar = self.f.colorbar(self.img)
@@ -119,6 +119,33 @@ class AxialSlider(Frame):
 
     def disable(self):
         self.slider.config(state=DISABLED, fg='#888', sliderrelief=FLAT)
+
+
+class LabeledEntry(Frame):
+    def __init__(self, master, textvariable=None, text='', width=None,
+                 disabled=False):
+        Frame.__init__(self, master)
+
+        self.disabled = False
+
+        self.label = Label(self, text=text)
+        self.label.pack(side=LEFT)
+
+        self.entry = Entry(self, textvariable=textvariable, width=width)
+        self.entry.pack(side=LEFT)
+
+        if disabled:
+            self.disable()
+
+    def enable(self):
+        self.disabled = False
+        self.entry.config(state=NORMAL, fg='#000')
+        self.label.config(fg='#000')
+
+    def disable(self):
+        self.disabled = True
+        self.entry.config(state=DISABLED, fg='#888')
+        self.label.config(fg='#888')
 
 
 class Error(Exception):
