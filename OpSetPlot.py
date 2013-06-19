@@ -36,6 +36,7 @@ class OpSetPlot(Frame):
         self.file_tree = DataTree(top_frame)
         self.file_tree.tree.pack(fill=BOTH, expand=1)
         self.file_tree.tree.bind("<Double-Button-1>", self.plot)
+        self.file_tree.tree.bind("<Return>", self.plot)
 
         self.plot_set = Button(plotctrl_frame, text="Plot Dataset",
                                command=self.plot)
@@ -69,11 +70,11 @@ class OpSetPlot(Frame):
         self.scale_min = StringVar()
         self.scale_max = StringVar()
         self.scale_min_entry = LabeledEntry(self, text="Min:", width=10,
-            textvariable=self.scale_min)
+                                            textvariable=self.scale_min)
         self.scale_min_entry.pack(side=LEFT)
         self.scale_min_entry.disable()
         self.scale_max_entry = LabeledEntry(self, text="Max:", width=10,
-            textvariable=self.scale_max)
+                                            textvariable=self.scale_max)
         self.scale_max_entry.pack(side=LEFT)
         self.scale_max_entry.disable()
 
@@ -167,6 +168,7 @@ class OpSetPlot(Frame):
 
     def update_plot(self, plane):
         if self.current_plane != self.axial.get():
+            self.current_plane = self.axial.get()
             self.plot()
 
     def plot(self, dummy=-1):
@@ -175,7 +177,11 @@ class OpSetPlot(Frame):
         file_id = info['values'][0]
         set_path = info['values'][1]
 
-        data = self.files[file_id].get_data_2d(set_path)
+        info = self.files[file_id].get_data_info(set_path)
+
+        self.axial.update(1, info.n_planes)
+
+        data = self.files[file_id].get_data_2d(set_path, self.current_plane)
 
         min_ = None
         max_ = None
@@ -184,8 +190,8 @@ class OpSetPlot(Frame):
         # data before we flatten it. The other options will be taken care of
         # later.
         if self.scale_mode.get() == 'global':
-            min_ = numpy.min(numpy.min(numpy.min(data)))
-            max_ = numpy.max(numpy.max(numpy.max(data)))
+            min_ = info.glb_min
+            max_ = info.glb_max
         elif self.scale_mode.get() == 'manual':
             min_ = float(self.scale_min.get())
             max_ = float(self.scale_max.get())

@@ -119,16 +119,39 @@ class DataFile:
         else:
             return self.f[data_name].value
 
-    def get_data_2d(self, data_id):
+    def get_data_info(self, data_id):
+        data = self.get_data(data_id)
+
+        # Number of planes
+        if numpy.ndim(data) == 3:
+            shape = numpy.shape(data)
+            planes = shape[0]
+        else:
+            planes = 1
+
+        # Global min/max
+        min_ = numpy.min(data)
+        max_ = numpy.max(data)
+
+        return DataInfo(n_planes=planes, max_=max_, min_=min_)
+
+    def get_data_2d(self, data_id, plane=None):
         data = self.get_data(data_id)
         if numpy.ndim(data) == 3:
             shape = numpy.shape(data)
             if shape[2] > 1:
-                n_axial = shape[0]
-                self.axial.update(1, n_axial)
-                self.current_plane = self.axial.get()
-                data = data[self.current_plane-1, :, :]
+                if not plane is None:
+                    data = data[plane-1, :, :]
+                else:
+                    data = data[0, :, :]
             else:
                 data = data[:, :, 0]
 
         return data
+
+
+class DataInfo:
+    def __init__(self, n_planes=None, max_=None, min_=None):
+        self.n_planes = n_planes
+        self.glb_max = max_
+        self.glb_min = min_
