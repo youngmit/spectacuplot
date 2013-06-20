@@ -22,9 +22,8 @@ class App(Tk):
     def __init__(self):
         Tk.__init__(self)
 
-        ico = PhotoImage(file=os.path.dirname(__file__)+"/icon.png")
-        self.call('wm', 'iconphoto', self._w, ico)
-        self.call
+        # ico = PhotoImage(file=os.path.dirname(__file__)+"/icon.png")
+        # self.call('wm', 'iconphoto', self._w, ico)
 
         self.title("Spectacuplot!")
 
