@@ -118,7 +118,11 @@ class AxialSlider(Frame):
 
     def update(self, from_, to):
         self.slider.config(from_=from_, to=to, state=NORMAL)
-        self.enable()
+
+        if to > 1:
+            self.enable()
+        else:
+            self.disable()
 
     def get(self):
         return self.slider.get()

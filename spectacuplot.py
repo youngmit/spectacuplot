@@ -1,6 +1,6 @@
 #!/usr/bin/python2
-import matplotlib
-matplotlib.use('TkAgg')
+# import matplotlib
+# matplotlib.use('TkAgg')
 
 import sys
 import os
@@ -27,8 +27,6 @@ class App(Tk):
         self.call
 
         self.title("Spectacuplot!")
-        # main_frame = Frame(self)
-        # main_frame.pack(fill=BOTH, expand=1)
 
         left_frame = Frame(self)
 
@@ -73,7 +71,7 @@ class App(Tk):
         self.open(file_name)
 
     def open(self, file_name):
-        f = DataFile(file_name)
+        f = OpenDataFile(file_name)
         self.opened_files.append(f)
         self.plot_set.update(self.opened_files)
         self.diff_frame.update(self.opened_files)

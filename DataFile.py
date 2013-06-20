@@ -3,6 +3,25 @@ import numpy
 import os
 
 
+def OpenDataFile(name):
+    # Figure out what type of file we are working with
+    if(name.split('.')[-1]) == 'h5':
+        h5f = h5py.File(name)
+        f = None
+        for s in h5f.keys():
+            if s == 'core_map':
+                print "MPACT Pin Power File"
+                f = DataFilePinPower(name)
+                break
+
+        if f is None:
+            # For now we are treating the MPACT Sn Vis file as the fallback.
+            # Should use a more robust way of determining that it is valid.
+            print "MPACT Sn Vis file"
+            f = DataFileSnVis(name)
+    return f
+
+
 class DataTreeNode:
     def __init__(self, f, name):
         self.path = name
@@ -48,46 +67,30 @@ class DataFile:
     name = ''
 
     def __init__(self, name):
-        # Figure out what type of file we are working with
-        if(name.split('.')[-1]) == 'h5':
-            f = h5py.File(name)
-            self.my_data_file = None
-            for s in f.keys():
-                if s == 'core_map':
-                    print "MPACT Pin Power File"
-                    self.my_data_file = DataFilePinPower(name)
-                    break
-
-            if self.my_data_file is None:
-                print "MPACT Sn Vis file"
-                self.my_data_file = DataFileSnVis(name)
-            # Set attributes from the child. Should be wrapping an access
-            # function but im lazy
-            self.name = self.my_data_file.name
-            self.data = self.my_data_file.data
+        self.name = name
 
     def get_erg(self):
-        return self.my_data_file.get_erg()
+        raise NotImplementedError('get_erg() is not implemented by this data file type!')
 
     def get_data(self, data_id):
-        return self.my_data_file.get_data(data_id)
-
-    def get_data_info(self, data_id):
-        return self.my_data_file.get_data_info(data_id)
+        raise NotImplementedError('get_data() is not implemented by this data file type!')
 
     def get_data_2d(self, data_id, plane=None):
-        return self.my_data_file.get_data_2d(data_id, plane)
+        raise NotImplementedError('get_data_2d() is not implemented by this data file type!')
+
+    def get_data_info(self, data_id):
+        raise NotImplementedError('get_data_info() is not implemented by this data file type!')
 
 
-class DataFileH5:
-    name = ""
+class DataFileH5(DataFile):
     path = ""
     set_names = []
     composite = False
     ng = 0
 
     def __init__(self, name):
-        self.composite = False
+        DataFile.__init__(self, name)
+
         self.path = name
         path = os.path.split(self.path)
         self.name = path[len(path)-1]
@@ -95,31 +98,15 @@ class DataFileH5:
 
         self.set_names = self.f.keys()
 
-        for n in self.set_names:
-            if n == 'proc_map':
-                self.proc_map = self.f['proc_map'].value
-                self.n_proc = self.f['n_proc'].value[0]
-                self.composite = True
-
-        # Define f, the file object from which to find available datasets
-        if self.composite:
-            fname = self.path[:len(self.path)-3]
-            fname = fname + '_n0' + '.h5'
-            f = h5py.File(fname)
-
-        else:
-            f = self.f
-
-        self.set_names = f.keys()
-
-        self.data = DataTreeNode(f, '/')
-
 
 class DataFilePinPower(DataFileH5):
     def __init__(self, name):
         DataFileH5.__init__(self, name)
         # Get the core map
         self.core_map = self.f['core_map'].value
+
+        # Build the node tree
+        self.data = DataTreeNode(self.f, '/')
 
     def get_data_2d(self, data_id, plane=None):
         if not plane is None:
@@ -163,7 +150,29 @@ class DataFilePinPower(DataFileH5):
 class DataFileSnVis(DataFileH5):
     def __init__(self, name):
         DataFileH5.__init__(self, name)
-        self.ng = self.f['ng'].value[0]
+
+        self.composite = False
+
+        for n in self.set_names:
+            if n == 'proc_map':
+                self.proc_map = self.f['proc_map'].value
+                self.n_proc = self.f['n_proc'].value[0]
+                self.composite = True
+                break
+
+        # If we are using a composite file, override the set names with the
+        # zero-th node set names.
+        if self.composite:
+            fname = self.path[:len(self.path)-3]
+            fname = fname + '_n0' + '.h5'
+            f = h5py.File(fname)
+
+        else:
+            f = self.f
+
+        self.data = DataTreeNode(f, '/')
+
+        self.ng = f['ng'].value[0]
 
     def get_data(self, data_id):
         if self.composite:
@@ -172,7 +181,7 @@ class DataFileSnVis(DataFileH5):
             for f in xrange(self.n_proc):
                 fname = self.path[:len(self.path)-3]
                 fname = fname + '_n' + str(f) + '.h5'
-                f = DataFile(fname)
+                f = DataFileSnVis(fname)
                 sub_data.append(f.get_data(data_id))
 
             # for now, flatten the proc_map to a 2d thing
@@ -211,7 +220,10 @@ class DataFileSnVis(DataFileH5):
         # Number of planes
         if numpy.ndim(data) == 3:
             shape = numpy.shape(data)
-            planes = shape[0]
+            if shape[2] > 1:
+                planes = shape[0]
+            else:
+                planes = 1
         else:
             planes = 1
 
@@ -220,8 +232,6 @@ class DataFileSnVis(DataFileH5):
         max_ = numpy.max(data)
 
         return DataInfo(n_planes=planes, max_=max_, min_=min_)
-
-
 
     def get_erg(self):
         if self.composite:
