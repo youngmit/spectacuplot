@@ -82,15 +82,6 @@ class OpSetPlot(Frame):
         self.cid = self.plot_area.canvas.mpl_connect('button_press_event',
                                                      self)
 
-    def toggle_spectra(self):
-        if self.spectra.get():
-            # Turn off spectra
-            self.cid = self.plot_area.canvas.mpl_connect('button_press_event',
-                                                         self)
-        else:
-            # Turn on spectra
-            self.plot_area.canvas.mpl_disconnect(self.cid)
-
     # This is the plot pick function, which gets bound to click events on
     # the plot area.
     def __call__(self, event):
@@ -110,18 +101,15 @@ class OpSetPlot(Frame):
             print x, y, data[y, x]
 
     def add_spectrum(self, event):
-        if self.w is None:
-            self.w = Toplevel()
-            self.pa = PlotArea(self.w)
-            self.pa.pack(fill=BOTH, expand=1)
-            # Bind the window destruction protocol to the clear function
-            self.w.protocol("WM_DELETE_WINDOW", self.kill_spect)
-
         # Get energy values
         item = self.file_tree.tree.selection()[0]
         info = self.file_tree.tree.item(item)
         file_id = info['values'][0]
-        erg = self.files[file_id].get_erg()
+        try:
+            erg = self.files[file_id].get_erg()
+        except NotImplementedError:
+            print 'No energy bounds found. Cannot plot spectra.'
+            return
         erg_w = []
         prev_e = 0.0
         for e in reversed(erg):
@@ -142,6 +130,13 @@ class OpSetPlot(Frame):
             g_name = set_pfx + "_" + str(g+1).zfill(3)
             data = self.files[file_id].get_data(g_name)
             spect.append(data[x][y][0]*erg[g]/erg_w[g])
+
+        if self.w is None:
+            self.w = Toplevel()
+            self.pa = PlotArea(self.w)
+            self.pa.pack(fill=BOTH, expand=1)
+            # Bind the window destruction protocol to the clear function
+            self.w.protocol("WM_DELETE_WINDOW", self.kill_spect)
 
         self.pa.plot_line(erg, spect, logx=True)
 

@@ -4,6 +4,10 @@ import os
 
 
 def OpenDataFile(name):
+    '''Module-global routine to handle interrogation of a file for its format
+    and to instantiate a data file object of the right type.
+    '''
+
     # Figure out what type of file we are working with
     if(name.split('.')[-1]) == 'h5':
         h5f = h5py.File(name)
@@ -23,6 +27,8 @@ def OpenDataFile(name):
 
 
 class DataTreeNode:
+    '''Defines a single node in a data file tree.'''
+
     def __init__(self, f, name):
         self.path = name
         self.name = name.split('/')[-1]
@@ -64,6 +70,9 @@ class DataTreeNode:
 
 
 class DataFile:
+    '''base class for all filetypes. Mostly just exists to throw errors if a
+       method is called that is not implemented by the derived class.'''
+
     name = ''
 
     def __init__(self, name):
@@ -122,6 +131,9 @@ class DataFilePinPower(DataFileH5):
 
         blank = numpy.zeros([raw_shape[2], raw_shape[3]])
 
+        # Construct the global array of data using the core map. Each row is
+        # constructed as an hstack, then the core is built using a vstack of all
+        # rows.
         rows = []
         for row in xrange(core_shape[1]):
             row_data = []
@@ -131,6 +143,8 @@ class DataFilePinPower(DataFileH5):
                 else:
                     row_data.append(blank)
             rows.append(numpy.hstack(row_data))
+        # Reverse the rows, since the core is described upside down in natural
+        # ordering
         data = numpy.vstack(reversed(rows))
         return data
 
@@ -244,6 +258,8 @@ class DataFileSnVis(DataFileH5):
 
 
 class DataInfo:
+    '''Simple container class to store information about a dataset. Essentialy a
+    struct.'''
     def __init__(self, n_planes=None, max_=None, min_=None):
         self.n_planes = n_planes
         self.glb_max = max_
