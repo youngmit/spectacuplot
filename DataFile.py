@@ -143,9 +143,11 @@ class DataFilePinPower(DataFileH5):
                 else:
                     row_data.append(blank)
             rows.append(numpy.hstack(row_data))
+        data = numpy.vstack((rows))
         # Reverse the rows, since the core is described upside down in natural
         # ordering
-        data = numpy.vstack(reversed(rows))
+        # data_row = data
+
         return data
 
     def get_data_info(self, data_id):

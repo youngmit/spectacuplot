@@ -34,10 +34,10 @@ class PlotArea(Frame):
         self.a.clear()
         if data.ndim == 3:
             self.img = self.a.imshow(data[:, :, 0], interpolation="none",
-                                     origin="lower", vmin=min_, vmax=max_)
+                                     origin="upper", vmin=min_, vmax=max_)
         else:
             self.img = self.a.imshow(data[:, :], interpolation="none",
-                                     origin="lower", vmin=min_, vmax=max_)
+                                     origin="upper", vmin=min_, vmax=max_)
         if(self.cbar is None):
             self.cbar = self.f.colorbar(self.img)
         else:
