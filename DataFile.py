@@ -122,7 +122,6 @@ class DataFilePinPower(DataFileH5):
         self.core_map = self.f['core_map'].value
 
     def get_data_2d(self, data_id, plane=None):
-        print '2dplane', plane
         if not plane is None:
             return self.get_data(data_id, plane)
         else:

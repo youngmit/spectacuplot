@@ -181,7 +181,6 @@ class OpSetPlot(Frame):
 
         self.axial.update(1, info.n_planes)
 
-        print self.current_plane
         data = self.files[file_id].get_data_2d(set_path, self.current_plane)
 
         min_ = None
