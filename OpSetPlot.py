@@ -106,7 +106,7 @@ class OpSetPlot(Frame):
             file_id = info['values'][0]
             set_path = info['values'][1]
 
-            data = self.files[file_id].get_data_2d(set_path)
+            data = self.files[file_id].get_data_2d(set_path, self.current_plane)
             print x, y, data[y, x]
 
     def add_spectrum(self, event):
@@ -181,6 +181,7 @@ class OpSetPlot(Frame):
 
         self.axial.update(1, info.n_planes)
 
+        print self.current_plane
         data = self.files[file_id].get_data_2d(set_path, self.current_plane)
 
         min_ = None

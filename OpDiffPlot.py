@@ -93,7 +93,7 @@ class OpDiffPlot(Frame):
         rms = math.sqrt(sum(sum((data1-data2)**2))/numpy.size(data1))
         self.labelVar.set('RMS Error: ' + str(rms))
 
-        self.plot_area.plot(data)
+        self.plot_area.plot(data, label='Relative Difference')
 
 
 def collapse_data(large, small):

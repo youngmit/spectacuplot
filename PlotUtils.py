@@ -4,6 +4,7 @@ from Tkinter import *
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from matplotlib.backends.backend_tkagg import NavigationToolbar2TkAgg
 from matplotlib.figure import Figure
+from matplotlib import pyplot
 
 from DataFile import *
 
@@ -20,13 +21,15 @@ class PlotArea(Frame):
 
         self.f = Figure()
         self.a = self.f.add_subplot(111)
+        self.a.set_xlabel("X")
+        self.a.set_ylabel("Y")
 
         self.canvas = FigureCanvasTkAgg(self.f, master=self)
         self.canvas.show()
         self.canvas.get_tk_widget().pack(fill=BOTH, expand=1)
         self.toolbar = NavigationToolbar2TkAgg(self.canvas, self)
 
-    def plot(self, data, name='No Name', min_=None, max_=None):
+    def plot(self, data, name='No Name', min_=None, max_=None, label=None):
         self.label.set(name)
         self.a.clear()
         if data.ndim == 3:
@@ -39,6 +42,12 @@ class PlotArea(Frame):
             self.cbar = self.f.colorbar(self.img)
         else:
             self.cbar.update_bruteforce(self.img)
+
+        if not label is None:
+            self.cbar.set_label(label)
+
+        self.a.set_xlabel("X")
+        self.a.set_ylabel("Y")
 
         self.canvas.draw()
 

@@ -45,6 +45,41 @@ class DataTreeNode:
 
 
 class DataFile:
+    name = ''
+
+    def __init__(self, name):
+        # Figure out what type of file we are working with
+        if(name.split('.')[-1]) == 'h5':
+            f = h5py.File(name)
+            self.my_data_file = None
+            for s in f.keys():
+                if s == 'core_map':
+                    print "MPACT Pin Power File"
+                    self.my_data_file = DataFilePinPower(name)
+                    break
+
+            if self.my_data_file is None:
+                print "MPACT Sn Vis file"
+                self.my_data_file = DataFileSnVis(name)
+            # Set attributes from the child. Should be wrapping an access
+            # function but im lazy
+            self.name = self.my_data_file.name
+            self.data = self.my_data_file.data
+
+    def get_erg(self):
+        return self.my_data_file.get_erg()
+
+    def get_data(self, data_id):
+        return self.my_data_file.get_data(data_id)
+
+    def get_data_info(self, data_id):
+        return self.my_data_file.get_data_info(data_id)
+
+    def get_data_2d(self, data_id, plane=None):
+        return self.my_data_file.get_data_2d(data_id, plane)
+
+
+class DataFileH5:
     name = ""
     path = ""
     set_names = []
@@ -76,24 +111,62 @@ class DataFile:
             f = self.f
 
         self.set_names = f.keys()
-        self.ng = f['ng'].value[0]
 
         self.data = DataTreeNode(f, '/')
 
-        # print self.data
 
-    def get_erg(self):
-        if self.composite:
-            fname = self.path[:len(self.path)-3]
-            fname = fname + '_n0' + '.h5'
-            f = h5py.File(fname)
-            return f['eubounds'].value
+class DataFilePinPower(DataFileH5):
+    def __init__(self, name):
+        DataFileH5.__init__(self, name)
+        # Get the core map
+        self.core_map = self.f['core_map'].value
+
+    def get_data_2d(self, data_id, plane=None):
+        print '2dplane', plane
+        if not plane is None:
+            return self.get_data(data_id, plane)
         else:
-            return self.f['eubounds'].value
+            return self.get_data(data_id)
+
+    def get_data(self, data_id, plane=1):
+        raw_data = self.f[data_id].value
+        raw_shape = numpy.shape(raw_data)
+
+        core_shape = numpy.shape(self.core_map)
+
+        blank = numpy.zeros([raw_shape[2], raw_shape[3]])
+
+        rows = []
+        for row in xrange(core_shape[1]):
+            row_data = []
+            for assem in self.core_map[row]:
+                if assem > 0:
+                    row_data.append(raw_data[assem-1, plane-1, :, :])
+                else:
+                    row_data.append(blank)
+            rows.append(numpy.hstack(row_data))
+        data = numpy.vstack(reversed(rows))
+        return data
+
+    def get_data_info(self, data_id):
+        data = self.f[data_id].value
+
+        shape = numpy.shape(data)
+        planes = shape[1]
+
+        # Global min/max
+        min_ = numpy.min(data)
+        max_ = numpy.max(data)
+
+        return DataInfo(n_planes=planes, max_=max_, min_=min_)
+
+
+class DataFileSnVis(DataFileH5):
+    def __init__(self, name):
+        DataFileH5.__init__(self, name)
+        self.ng = self.f['ng'].value[0]
 
     def get_data(self, data_id):
-        data_name = data_id
-
         if self.composite:
             # Blob all of the data together
             sub_data = []
@@ -101,7 +174,7 @@ class DataFile:
                 fname = self.path[:len(self.path)-3]
                 fname = fname + '_n' + str(f) + '.h5'
                 f = DataFile(fname)
-                sub_data.append(f.get_data(data_name))
+                sub_data.append(f.get_data(data_id))
 
             # for now, flatten the proc_map to a 2d thing
             proc_map = self.proc_map[0]
@@ -117,7 +190,21 @@ class DataFile:
             return data
 
         else:
-            return self.f[data_name].value
+            return self.f[data_id].value
+
+    def get_data_2d(self, data_id, plane=None):
+        data = self.get_data(data_id)
+        if numpy.ndim(data) == 3:
+            shape = numpy.shape(data)
+            if shape[2] > 1:
+                if not plane is None:
+                    data = data[plane-1, :, :]
+                else:
+                    data = data[0, :, :]
+            else:
+                data = data[:, :, 0]
+
+        return data
 
     def get_data_info(self, data_id):
         data = self.get_data(data_id)
@@ -135,19 +222,16 @@ class DataFile:
 
         return DataInfo(n_planes=planes, max_=max_, min_=min_)
 
-    def get_data_2d(self, data_id, plane=None):
-        data = self.get_data(data_id)
-        if numpy.ndim(data) == 3:
-            shape = numpy.shape(data)
-            if shape[2] > 1:
-                if not plane is None:
-                    data = data[plane-1, :, :]
-                else:
-                    data = data[0, :, :]
-            else:
-                data = data[:, :, 0]
 
-        return data
+
+    def get_erg(self):
+        if self.composite:
+            fname = self.path[:len(self.path)-3]
+            fname = fname + '_n0' + '.h5'
+            f = h5py.File(fname)
+            return f['eubounds'].value
+        else:
+            return self.f['eubounds'].value
 
 
 class DataInfo:
