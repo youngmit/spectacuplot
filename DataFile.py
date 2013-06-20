@@ -144,9 +144,6 @@ class DataFilePinPower(DataFileH5):
                     row_data.append(blank)
             rows.append(numpy.hstack(row_data))
         data = numpy.vstack((rows))
-        # Reverse the rows, since the core is described upside down in natural
-        # ordering
-        # data_row = data
 
         return data
 
@@ -227,6 +224,9 @@ class DataFileSnVis(DataFileH5):
                     data = data[0, :, :]
             else:
                 data = data[:, :, 0]
+
+            # Flip in y
+            data = data[::-1, :]
 
         return data
 
