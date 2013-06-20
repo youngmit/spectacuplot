@@ -68,7 +68,9 @@ class OpSetPlot(Frame):
         Radiobutton(scale_frame, text="Manual", variable=self.scale_mode,
                     value='manual', command=self.change_scale_mode).pack(anchor=W)
         self.scale_min = StringVar()
+        self.scale_min.set('0.0')
         self.scale_max = StringVar()
+        self.scale_max.set('1.0')
         self.scale_min_entry = LabeledEntry(self, text="Min:", width=10,
                                             textvariable=self.scale_min)
         self.scale_min_entry.pack(side=LEFT)
@@ -151,6 +153,7 @@ class OpSetPlot(Frame):
         else:
             self.scale_min_entry.disable()
             self.scale_max_entry.disable()
+        self.plot()
 
     def select_file(self, file_id=-1):
         file_id = self.file_list.curselection()[0]
