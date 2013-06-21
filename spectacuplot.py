@@ -24,8 +24,8 @@ class App(Tk):
 
         pwd = os.path.dirname(__file__)
 
-        ico = PhotoImage(file=os.path.join(pwd, "icon.png"))
-        self.call('wm', 'iconphoto', self._w, ico)
+        # ico = PhotoImage(file=os.path.join(pwd, "icon.png"))
+        # self.call('wm', 'iconphoto', self._w, ico)
 
         self.title("Spectacuplot!")
 
