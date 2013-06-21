@@ -113,7 +113,6 @@ class DataFilePinPower(DataFileH5):
         DataFileH5.__init__(self, name)
         # Get the core map
         self.core_map = self.f['core_map'].value
-        print 'Core Map:', self.core_map
 
         # Build the node tree
         self.data = DataTreeNode(self.f, '/')
@@ -127,10 +126,8 @@ class DataFilePinPower(DataFileH5):
     def get_data(self, data_id, plane=1):
         raw_data = self.f[data_id].value
         raw_shape = numpy.shape(raw_data)
-        print 'raw data shape', raw_shape
 
         core_shape = numpy.shape(self.core_map)
-        print 'core shape', core_shape
 
         blank = numpy.zeros([raw_shape[2], raw_shape[3]])
 
@@ -139,9 +136,7 @@ class DataFilePinPower(DataFileH5):
         # rows.
         rows = []
         for row in xrange(core_shape[0]):
-            print 'row', row
             row_data = []
-            print row
             for assem in self.core_map[row]:
                 if assem > 0:
                     row_data.append(raw_data[assem-1, plane-1, :, :])
