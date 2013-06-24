@@ -71,18 +71,18 @@ class OpSetPlot(Frame):
         self.scale_min.set('0.0')
         self.scale_max = StringVar()
         self.scale_max.set('1.0')
-        self.scale_min_entry = LabeledEntry(self, text="Min:", width=10,
+        self.scale_min_entry = LabeledEntry(scale_frame, text="Min:", width=10,
                                             textvariable=self.scale_min)
         self.scale_min_entry.pack(side=LEFT)
         self.scale_min_entry.disable()
-        self.scale_max_entry = LabeledEntry(self, text="Max:", width=10,
+        self.scale_max_entry = LabeledEntry(scale_frame, text="Max:", width=10,
                                             textvariable=self.scale_max)
         self.scale_max_entry.pack(side=LEFT)
         self.scale_max_entry.disable()
 
         # Label for displaying scalar data
         self.scalarVar = StringVar()
-        Label(self, textvariable=self.scalarVar).pack(anchor=W)
+        Label(bottom_frame, textvariable=self.scalarVar).pack(anchor=W)
 
         # Register plot with callback
         self.cid = self.plot_area.canvas.mpl_connect('button_press_event',
@@ -184,10 +184,10 @@ class OpSetPlot(Frame):
 
         info = self.files[file_id].get_data_info(set_path)
 
-        if info.ndim < 2:
+        if info.ndim == 0:
             # Display scalar data
             data = self.files[file_id].get_data(set_path)
-            self.scalarVar.set(set_path + ': ' + str(data))
+            self.scalarVar.set(set_path[1:] + ': ' + str(data))
         else:
             # Plot 2D data
             self.axial.update(1, info.n_planes)

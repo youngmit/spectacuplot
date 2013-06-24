@@ -171,7 +171,11 @@ class DataFilePinPower(DataFileH5):
         2 if you use one-based indexing). Use that value from the shape.'''
 
         data = self.f[data_id].value
-        planes = numpy.shape(data)[1]
+        planes = None
+        shape = numpy.shape(data)
+
+        if len(shape) == 4:
+            planes = shape[1]
         return DataInfo(data, planes)
 
 
@@ -299,13 +303,15 @@ class DataInfo:
     struct.
     '''
     def __init__(self, data, planes=None):
-        # Number of planes. If this is passed in, use that value, else use
-        # leading order dimension
-        self.ndim = numpy.ndim(data)
+        if numpy.ndim(data) == 1 and numpy.size(data) == 1:
+            self.ndim = 0
+        else:
+            self.ndim = numpy.ndim(data)
         self.shape = numpy.shape(data)
 
+        # Number of planes. If this is passed in, use that value, else use
+        # leading order dimension
         if planes is None:
-            print 'figuring out how many planes'
             if self.ndim >= 3:
                 planes = self.shape[0]
             elif self.ndim == 2:
