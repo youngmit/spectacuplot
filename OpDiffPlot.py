@@ -5,6 +5,7 @@ from PlotUtils import *
 import numpy
 import math
 
+
 class OpDiffPlot(Frame):
     '''Plot tool for plotting the relative difference between two datasets.
 
@@ -49,10 +50,12 @@ class OpDiffPlot(Frame):
                                   command=self.plot)
         self.plot_button.pack()
 
-        self.labelVar = StringVar()
-        self.labelVar.set('RMS Error: ')
-        label = Label(bottom_frame, textvariable=self.labelVar)
-        label.pack()
+        self.rmsVar = StringVar()
+        self.rmsVar.set('RMS Error: ')
+        Label(bottom_frame, textvariable=self.rmsVar).pack(anchor=W)
+        self.maxVar = StringVar()
+        self.maxVar.set('Max: ')
+        Label(bottom_frame, textvariable=self.maxVar).pack(anchor=W)
 
     def update(self, files):
         self.left_tree.update(files)
@@ -65,19 +68,19 @@ class OpDiffPlot(Frame):
         info = self.left_tree.tree.item(item)
         file_id = info['values'][0]
         set_path = info['values'][1]
-        data1 = self.files[file_id].get_data(set_path)
+        data1 = self.files[file_id].get_data_2d(set_path)
 
         item = self.right_tree.tree.selection()[0]
         info = self.right_tree.tree.item(item)
         file_id = info['values'][0]
         set_path = info['values'][1]
-        data2 = self.files[file_id].get_data(set_path)
+        data2 = self.files[file_id].get_data_2d(set_path)
 
-        # Cast data to 2D
-        if data1.ndim == 3:
-            data1 = data1[:, :, 0]
-        if data2.ndim == 3:
-            data2 = data2[:, :, 0]
+        # # Cast data to 2D
+        # if data1.ndim == 3:
+        #     data1 = data1[:, :, 0]
+        # if data2.ndim == 3:
+        #     data2 = data2[:, :, 0]
 
         # check dataset sizes
         data1_shape = numpy.shape(data1)
@@ -90,8 +93,10 @@ class OpDiffPlot(Frame):
 
         data = (data1-data2) / data1
 
-        rms = math.sqrt(sum(sum((data1-data2)**2))/numpy.size(data1))
-        self.labelVar.set('RMS Error: ' + str(rms))
+        non_zeros = numpy.count_nonzero(data1-data2)
+        rms = math.sqrt(sum(sum((data1-data2)**2))/non_zeros)
+        self.rmsVar.set('RMS Error: ' + str(rms))
+        self.maxVar.set('Max: ' + str(numpy.nanmax(data)))
 
         self.plot_area.plot(data, label='Relative Difference')
 

@@ -80,6 +80,10 @@ class OpSetPlot(Frame):
         self.scale_max_entry.pack(side=LEFT)
         self.scale_max_entry.disable()
 
+        # Label for displaying scalar data
+        self.scalarVar = StringVar()
+        Label(self, textvariable=self.scalarVar).pack(anchor=W)
+
         # Register plot with callback
         self.cid = self.plot_area.canvas.mpl_connect('button_press_event',
                                                      self)
@@ -111,6 +115,9 @@ class OpSetPlot(Frame):
             erg = self.files[file_id].get_erg()
         except NotImplementedError:
             print 'No energy bounds found. Cannot plot spectra.'
+            return
+        except:
+            print 'Failed tp get energy bounds. Are they present?'
             return
         erg_w = []
         prev_e = 0.0
@@ -177,26 +184,32 @@ class OpSetPlot(Frame):
 
         info = self.files[file_id].get_data_info(set_path)
 
-        self.axial.update(1, info.n_planes)
+        if info.ndim < 2:
+            # Display scalar data
+            data = self.files[file_id].get_data(set_path)
+            self.scalarVar.set(set_path + ': ' + str(data))
+        else:
+            # Plot 2D data
+            self.axial.update(1, info.n_planes)
 
-        data = self.files[file_id].get_data_2d(set_path, self.current_plane)
+            data = self.files[file_id].get_data_2d(set_path, self.current_plane)
 
-        min_ = None
-        max_ = None
+            min_ = None
+            max_ = None
 
-        # If we are doing global data scale, grab the scale bounds from the 3D
-        # data before we flatten it. The other options will be taken care of
-        # later.
-        if self.scale_mode.get() == 'global':
-            min_ = info.glb_min
-            max_ = info.glb_max
-        elif self.scale_mode.get() == 'manual':
-            min_ = float(self.scale_min.get())
-            max_ = float(self.scale_max.get())
+            # If we are doing global data scale, grab the scale bounds from the 3D
+            # data before we flatten it. The other options will be taken care of
+            # later.
+            if self.scale_mode.get() == 'global':
+                min_ = info.glb_min
+                max_ = info.glb_max
+            elif self.scale_mode.get() == 'manual':
+                min_ = float(self.scale_min.get())
+                max_ = float(self.scale_max.get())
 
-        name = set_path.split('/')[-1]
+            name = set_path.split('/')[-1]
 
-        self.plot_area.plot(data, name, min_, max_)
+            self.plot_area.plot(data, name, min_, max_)
 
     def update(self, files):
         self.files = files
