@@ -67,10 +67,18 @@ class PlotArea(Frame):
         self.canvas.get_tk_widget().pack(fill=BOTH, expand=1)
 
 
-class DataTree:
+class DataTree(Frame):
     def __init__(self, master):
-        self.tree = Treeview(master)
+        Frame.__init__(self, master, bg="black")
+        scroll = Scrollbar(self)
+
+        self.tree = Treeview(self, yscrollcommand=scroll.set)
+        scroll.config(command=self.tree.yview)
+
         self.items = []
+
+        self.tree.pack(side=LEFT, fill=BOTH, expand=1)
+        scroll.pack(side=LEFT, fill=Y)
 
     def update(self, files):
         self.files = files

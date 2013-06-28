@@ -34,7 +34,7 @@ class OpSetPlot(Frame):
         Label(top_frame, text="File/Dataset:").pack(anchor=W)
 
         self.file_tree = DataTree(top_frame)
-        self.file_tree.tree.pack(fill=BOTH, expand=1)
+        self.file_tree.pack(anchor=E, fill=BOTH, expand=1)
         self.file_tree.tree.bind("<Double-Button-1>", self.plot)
         self.file_tree.tree.bind("<Return>", self.plot)
 
@@ -55,7 +55,6 @@ class OpSetPlot(Frame):
         Label(slider_frame, text="Axial plane:").pack(anchor=W)
         self.axial = AxialSlider(slider_frame, command=self.update_plot)
         self.axial.pack(side=BOTTOM, expand=1, fill=BOTH)
-
         # Scale selector
         Label(scale_frame, text="Color Scale:").pack(anchor=W)
         self.scale_mode = StringVar()

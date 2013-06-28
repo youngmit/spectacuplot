@@ -42,9 +42,9 @@ class OpDiffPlot(Frame):
         right_frame.pack(side=LEFT, expand=1, fill=BOTH)
 
         self.left_tree = DataTree(left_frame)
-        self.left_tree.tree.pack(expand=1, fill=BOTH)
+        self.left_tree.pack(expand=1, fill=BOTH)
         self.right_tree = DataTree(right_frame)
-        self.right_tree.tree.pack(expand=1, fill=BOTH)
+        self.right_tree.pack(expand=1, fill=BOTH)
 
         self.plot_button = Button(bottom_frame, text="Plot Diff",
                                   command=self.plot)
@@ -76,47 +76,63 @@ class OpDiffPlot(Frame):
         set_path = info['values'][1]
         data2 = self.files[file_id].get_data_2d(set_path)
 
-        # # Cast data to 2D
-        # if data1.ndim == 3:
-        #     data1 = data1[:, :, 0]
-        # if data2.ndim == 3:
-        #     data2 = data2[:, :, 0]
-
         # check dataset sizes
         data1_shape = numpy.shape(data1)
         data2_shape = numpy.shape(data2)
 
-        if data1_shape[0] > data2_shape[0]:
-            data1 = collapse_data(data1, data2)
-        if data2_shape[0] > data1_shape[0]:
-            data2 = collapse_data(data2, data1)
+        if data1_shape[0] != data2_shape[0]:
+            (data1, data2) = collapse_data(data1, data2)
 
         data = (data1-data2) / data1
 
         non_zeros = numpy.count_nonzero(data1-data2)
         rms = math.sqrt(sum(sum((data1-data2)**2))/non_zeros)
         self.rmsVar.set('RMS Error: ' + str(rms))
-        self.maxVar.set('Max: ' + str(numpy.nanmax(data)))
+        self.maxVar.set('Max: ' + str(numpy.nanmax(abs(data))))
 
         self.plot_area.plot(data, label='Relative Difference')
 
 
-def collapse_data(large, small):
-    shape_s = numpy.shape(small)
-    shape_l = numpy.shape(large)
-    width_s = shape_s[0]
-    width_l = shape_l[0]
+def collapse_data(data1, data2):
+    shape_1 = numpy.shape(data1)
+    shape_2 = numpy.shape(data2)
+    width_1 = shape_1[0]
+    width_2 = shape_2[0]
 
-    if width_l % width_s != 0:
-        raise Error
+    # Determine the greatest common factor to homogenize by
+    g1 = gcf(shape_1[0], shape_2[0])
+    g2 = gcf(shape_1[1], shape_2[1])
+    if shape_1[0]/g1 != shape_1[1]/g2:
+        raise StandardError('Could not determine a consistent GCF.')
 
-    ratio = width_l/width_s
+    # homogenize data1
+    ratio = width_1/g1
+    data1h = numpy.zeros([g1, g2])
+    for i in xrange(shape_1[0]):
+        for j in xrange(shape_1[1]):
+            row = i/ratio
+            col = j/ratio
+            data1h[row, col] = data1h[row, col] + data1[i, j]
+    data1h = data1h/(ratio*ratio)
+    # homogenize data2
+    ratio = width_2/g1
+    data2h = numpy.zeros([g1, g2])
+    for i in xrange(shape_2[0]):
+        for j in xrange(shape_2[1]):
+            row = i/ratio
+            col = j/ratio
+            data2h[row, col] = data2h[row, col] + data2[i, j]
+    data2h = data2h/(ratio*ratio)
 
-    data = numpy.zeros(shape_s)
-    for i in xrange(shape_l[0]):
-        for j in xrange(shape_l[1]):
-            row_s = i/ratio
-            col_s = j/ratio
-            data[row_s, col_s] = data[row_s, col_s]+large[i, j]
-    data = data / ratio**2
-    return data
+    return (data1h, data2h)
+
+
+def gcf(a, b):
+    f = 1
+    while f != 0:
+        l = max(a, b)
+        s = min(a, b)
+        f = l % s
+        a = s
+        b = f
+    return a

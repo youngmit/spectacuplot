@@ -52,7 +52,7 @@ class App(Tk):
         # Notebook
         nb = Notebook(control_frame, name="controls")
         nb.enable_traversal()
-        nb.pack(expand=1, fill=BOTH)
+        nb.pack()#(expand=1, fill=BOTH)
 
         # Plot Area
         self.plot_frame = PlotArea(self)
