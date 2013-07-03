@@ -4,7 +4,8 @@ from PlotUtils import *
 
 
 class OpSetPlot(Frame):
-    w = None
+    spect_w = None
+    axial_w = None
 
     def __init__(self, master, files, plot_area):
         Frame.__init__(self, master)
@@ -47,9 +48,11 @@ class OpSetPlot(Frame):
         self.pick_mode.set('value')
 
         Radiobutton(plotctrl_frame, text="Value", variable=self.pick_mode,
-                    value='value').pack(side=TOP)
+                    value='value').pack(anchor=W)
         Radiobutton(plotctrl_frame, text="Spectra", variable=self.pick_mode,
-                    value='spectra').pack(side=TOP)
+                    value='spectra').pack(anchor=W)
+        Radiobutton(plotctrl_frame, text="Axial", variable=self.pick_mode,
+                    value='axial').pack(anchor=W)
 
         # Axial Slider
         Label(slider_frame, text="Axial plane:").pack(anchor=W)
@@ -85,11 +88,11 @@ class OpSetPlot(Frame):
 
         # Register plot with callback
         self.cid = self.plot_area.canvas.mpl_connect('button_press_event',
-                                                     self)
+                                                     self.pick)
 
     # This is the plot pick function, which gets bound to click events on
     # the plot area.
-    def __call__(self, event):
+    def pick(self, event):
         if not event.dblclick:
             return
         if self.pick_mode.get() == 'spectra':
@@ -104,6 +107,8 @@ class OpSetPlot(Frame):
 
             data = self.files[file_id].get_data_2d(set_path, self.current_plane)
             print x, y, data[y, x]
+        elif self.pick_mode.get() == 'axial':
+            self.add_axial(event)
 
     def add_spectrum(self, event):
         # Get energy values
@@ -113,10 +118,10 @@ class OpSetPlot(Frame):
         try:
             erg = self.files[file_id].get_erg()
         except NotImplementedError:
-            print 'No energy bounds found. Cannot plot spectra.'
+            print 'The data file type apparently does not support spectra.'
             return
         except:
-            print 'Failed tp get energy bounds. Are they present?'
+            print 'Failed to get energy bounds. Are they present?'
             return
         erg_w = []
         prev_e = 0.0
@@ -126,8 +131,8 @@ class OpSetPlot(Frame):
         erg_w.reverse()
 
         # Build array
-        set_name = self.plot_area.label.get()
-        set_pfx = set_name.split('_')[0]
+        set_name = info['values'][1]
+        set_pfx = set_name.rsplit('/', 1)[0]
 
         # get the index of the region that was clicked
         x = int(event.xdata)
@@ -135,22 +140,53 @@ class OpSetPlot(Frame):
 
         spect = []
         for g in xrange(self.files[file_id].ng):
-            g_name = set_pfx + "_" + str(g+1).zfill(3)
+            g_name = set_pfx + "/" + str(g+1).zfill(3)
             data = self.files[file_id].get_data(g_name)
-            spect.append(data[x][y][0]*erg[g]/erg_w[g])
+            spect.append(data[0][y][x]*erg[g]/erg_w[g])
 
-        if self.w is None:
-            self.w = Toplevel()
-            self.pa = PlotArea(self.w)
-            self.pa.pack(fill=BOTH, expand=1)
+        if self.spect_w is None:
+            self.spect_w = Toplevel()
+            self.spect_pa = PlotArea(self.spect_w)
+            self.spect_pa.pack(fill=BOTH, expand=1)
             # Bind the window destruction protocol to the clear function
-            self.w.protocol("WM_DELETE_WINDOW", self.kill_spect)
+            self.spect_w.protocol("WM_DELETE_WINDOW", self.kill_spect)
 
-        self.pa.plot_line(erg, spect, logx=True)
+        self.spect_pa.plot_line(erg, spect, logx=True)
+
+    def add_axial(self, event):
+        # Get energy values
+        item = self.file_tree.tree.selection()[0]
+        info = self.file_tree.tree.item(item)
+        file_id = info['values'][0]
+
+        # Mesh. At some point, derrive this from the actual data
+        mesh = range(45)
+
+        # Build array
+        set_name = info['values'][1]
+
+        # get the index of the region that was clicked
+        x = int(event.xdata)
+        y = int(event.ydata)
+
+        axial = self.files[file_id].get_data(set_name)[:, y, x]
+
+        if self.axial_w is None:
+            self.axial_w = Toplevel()
+            self.axial_pa = PlotArea(self.axial_w)
+            self.axial_pa.pack(fill=BOTH, expand=1)
+            # Bind the window destruction protocol to the clear function
+            self.axial_w.protocol("WM_DELETE_WINDOW", self.kill_axial)
+
+        self.axial_pa.plot_line(mesh, axial)
 
     def kill_spect(self):
-        self.w.destroy()
-        self.w = None
+        self.spect_w.destroy()
+        self.spect_w = None
+
+    def kill_axial(self):
+        self.axial_w.destroy()
+        self.axial_w = None
 
     def change_scale_mode(self):
         if self.scale_mode.get() == 'manual':

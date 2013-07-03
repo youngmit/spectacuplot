@@ -21,8 +21,8 @@ class PlotArea(Frame):
 
         self.f = Figure()
         self.a = self.f.add_subplot(111)
-        self.a.set_xlabel("X")
-        self.a.set_ylabel("Y")
+        self.a.set_xlabel("X Pin")
+        self.a.set_ylabel("Y Pin")
 
         self.canvas = FigureCanvasTkAgg(self.f, master=self)
         self.canvas.show()
@@ -46,8 +46,8 @@ class PlotArea(Frame):
         if not label is None:
             self.cbar.set_label(label)
 
-        self.a.set_xlabel("X")
-        self.a.set_ylabel("Y")
+        self.a.set_xlabel("X Pin")
+        self.a.set_ylabel("Y Pin")
 
         self.canvas.draw()
 

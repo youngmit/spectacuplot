@@ -255,7 +255,7 @@ class DataFileSnVis(DataFileH5):
                 else:
                     data = data[0, :, :]
             else:
-                data = data[:, :, 0]
+                data = data[0, :, :]
 
             # Flip in y
             data = data[::-1, :]
