@@ -78,6 +78,7 @@ class DataFile(object):
 
     def __init__(self, name):
         self.name = name
+        self.has_mesh = False
 
     def get_erg(self):
         raise NotImplementedError('get_erg() is not implemented by this data file type!')
@@ -211,7 +212,10 @@ class DataFileSnVis(DataFileH5):
 
         self.data = DataTreeNode(f, '/')
 
-        self.ng = f['ng'].value[0]
+        try:
+            self.ng = f['ng'].value[0]
+        except:
+            self.ng = 0
 
     def get_data(self, data_id):
         '''Overrides the get_data function on the HDF5 file class. This is to
@@ -243,7 +247,14 @@ class DataFileSnVis(DataFileH5):
 
         else:
             # Defer to the superclass get_data routine
-            return super(DataFileSnVis, self).get_data(data_id)
+            data = super(DataFileSnVis, self).get_data(data_id)
+            # flip the data along the y axis, because nuclear engineers make no
+            # sense.
+            sh = numpy.shape(data)
+            if len(sh) == 3:
+                return data[:, ::-1, :]
+            elif len(sh) == 2:
+                return data[::-1, :]
 
     def get_data_2d(self, data_id, plane=None):
         data = self.get_data(data_id)
@@ -256,10 +267,6 @@ class DataFileSnVis(DataFileH5):
                     data = data[0, :, :]
             else:
                 data = data[0, :, :]
-
-            # Flip in y
-            data = data[::-1, :]
-
         return data
 
     def get_data_info(self, data_id):

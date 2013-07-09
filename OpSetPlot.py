@@ -159,9 +159,6 @@ class OpSetPlot(Frame):
         info = self.file_tree.tree.item(item)
         file_id = info['values'][0]
 
-        # Mesh. At some point, derrive this from the actual data
-        mesh = range(45)
-
         # Build array
         set_name = info['values'][1]
 
@@ -171,14 +168,16 @@ class OpSetPlot(Frame):
 
         axial = self.files[file_id].get_data(set_name)[:, y, x]
 
+        # Mesh. At some point, derrive this from the actual data
+        mesh = numpy.linspace(0.0, 1.0, len(axial))
+
         if self.axial_w is None:
             self.axial_w = Toplevel()
             self.axial_pa = PlotArea(self.axial_w)
             self.axial_pa.pack(fill=BOTH, expand=1)
             # Bind the window destruction protocol to the clear function
             self.axial_w.protocol("WM_DELETE_WINDOW", self.kill_axial)
-
-        self.axial_pa.plot_line(mesh, axial)
+        self.axial_pa.plot_line(mesh, axial, marker='.')
 
     def kill_spect(self):
         self.spect_w.destroy()

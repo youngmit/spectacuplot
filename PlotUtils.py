@@ -54,7 +54,7 @@ class PlotArea(Frame):
         self.canvas.get_tk_widget().pack(fill=BOTH, expand=1)
 
     def plot_line(self, datax, datay, logx=False, logy=False, clear=False,
-                  name='No Name'):
+                  name='No Name', label=None, marker=None):
         self.label.set(name)
         if clear:
             self.a.clear()
@@ -62,7 +62,7 @@ class PlotArea(Frame):
             self.a.set_xscale('log')
         if logy:
             self.a.set_yscale('log')
-        self.line = self.a.plot(datax, datay)
+        self.line = self.a.plot(datax, datay, marker=marker, label=label)
         self.canvas.draw()
         self.canvas.get_tk_widget().pack(fill=BOTH, expand=1)
 
