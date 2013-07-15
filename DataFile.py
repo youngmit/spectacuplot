@@ -79,6 +79,7 @@ class DataFile(object):
     def __init__(self, name):
         self.name = name
         self.has_mesh = False
+        self.flip_y = False
 
     def get_erg(self):
         raise NotImplementedError('get_erg() is not implemented by this data file type!')
@@ -192,6 +193,12 @@ class DataFileSnVis(DataFileH5):
         DataFileH5.__init__(self, name)
 
         self.composite = False
+        self.flip_y = True
+
+        print self.f.attrs.keys()
+        print self.f.attrs.get('noflip', default='lala')
+        if self.f.attrs.get('noflip') == 1:
+            self.flip_y = False
 
         for n in self.set_names:
             if n == 'proc_map':
@@ -252,9 +259,15 @@ class DataFileSnVis(DataFileH5):
             # sense.
             sh = numpy.shape(data)
             if len(sh) == 3:
-                return data[:, ::-1, :]
+                if self.flip_y:
+                    return data[:, ::-1, :]
+                else:
+                    return data
             elif len(sh) == 2:
-                return data[::-1, :]
+                if self.flip_y:
+                    return data[::-1, :]
+                else:
+                    return data
 
     def get_data_2d(self, data_id, plane=None):
         data = self.get_data(data_id)
