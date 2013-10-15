@@ -177,7 +177,8 @@ class OpSetPlot(Frame):
             self.axial_pa.pack(fill=BOTH, expand=1)
             # Bind the window destruction protocol to the clear function
             self.axial_w.protocol("WM_DELETE_WINDOW", self.kill_axial)
-        self.axial_pa.plot_line(mesh, axial, marker='.')
+        self.axial_pa.plot_line(mesh, axial, xlabel="Normalized Axial Height",
+                                ylabel="Scalar Flux")
 
     def kill_spect(self):
         self.spect_w.destroy()

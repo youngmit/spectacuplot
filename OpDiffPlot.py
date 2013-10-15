@@ -6,6 +6,49 @@ import numpy
 import math
 
 
+def calc_rms(d1, d2):
+    '''Return the root mean square percent error of a dataset.
+
+    Arguments:
+    d1 - the data set for which to calculate error
+    d2 - the reference dataset'''
+
+    nz = numpy.count_nonzero(d2)
+    e = (d1-d2)*100.0
+    rms = math.sqrt(numpy.sum(e**2)/nz)
+
+    return rms
+
+
+def calc_avg(d1, d2):
+    '''Return the average percent error of a dataset.
+
+    Arguments:
+    d1 - the data set for which to calculate error
+    d2 - the reference dataset'''
+
+    e = (d1-d2)*100.0
+    nz = numpy.count_nonzero(d2)
+    avg = numpy.sum(numpy.abs(e))/nz
+
+    return avg
+
+
+def calc_mre(d1, d2):
+    '''Return the mean relative percent error of a dataset.
+
+    Arguments:
+    d1 - the data set for which to calculate error
+    d2 - the reference dataset'''
+
+    e = (d1-d2)*100.0
+    nz = numpy.count_nonzero(d2)
+    p_avg = numpy.sum(d2)/nz
+    mre = numpy.sum(numpy.abs(e)*d2)/(nz*p_avg)
+
+    return mre
+
+
 class OpDiffPlot(Frame):
     '''Plot tool for plotting the relative difference between two datasets.
 
@@ -41,8 +84,10 @@ class OpDiffPlot(Frame):
         right_frame = Frame(self)
         right_frame.pack(side=LEFT, expand=1, fill=BOTH)
 
+        Label(left_frame, text="Observed:").pack()
         self.left_tree = DataTree(left_frame)
         self.left_tree.pack(expand=1, fill=BOTH)
+        Label(right_frame, text="Reference:").pack()
         self.right_tree = DataTree(right_frame)
         self.right_tree.pack(expand=1, fill=BOTH)
 
@@ -83,12 +128,19 @@ class OpDiffPlot(Frame):
         if data1_shape[0] != data2_shape[0]:
             (data1, data2) = collapse_data(data1, data2)
 
-        data = (data1-data2) / data1
+        data = (data1-data2) / data2
 
-        non_zeros = numpy.count_nonzero(data1-data2)
-        rms = math.sqrt(sum(sum((data1-data2)**2))/non_zeros)
+        rms = calc_rms(data1, data2)
+        avg = calc_avg(data1, data2)
+        mre = calc_mre(data1, data2)
+
+        # print "RMS % \t AVG % \t MRE %"
+        print rms, "\t", avg, "\t", mre
+
         self.rmsVar.set('RMS Error: ' + str(rms))
-        self.maxVar.set('Max: ' + str(numpy.nanmax(abs(data))))
+
+        self.maxVar.set('Max: ' + str(numpy.nanmax(abs(data) *
+                        numpy.isfinite(data))))
 
         self.plot_area.plot(data, label='Relative Difference')
 

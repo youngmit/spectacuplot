@@ -29,7 +29,8 @@ class PlotArea(Frame):
         self.canvas.get_tk_widget().pack(fill=BOTH, expand=1)
         self.toolbar = NavigationToolbar2TkAgg(self.canvas, self)
 
-    def plot(self, data, name='No Name', min_=None, max_=None, label=None):
+    def plot(self, data, name='No Name', min_=None, max_=None, label=None,
+             xlabel="X Pin", ylabel="Y Pin"):
         self.label.set(name)
         self.a.clear()
         if data.ndim == 3:
@@ -46,15 +47,16 @@ class PlotArea(Frame):
         if not label is None:
             self.cbar.set_label(label)
 
-        self.a.set_xlabel("X Pin")
-        self.a.set_ylabel("Y Pin")
+        self.a.set_xlabel(xlabel)
+        self.a.set_ylabel(ylabel)
 
         self.canvas.draw()
 
         self.canvas.get_tk_widget().pack(fill=BOTH, expand=1)
 
     def plot_line(self, datax, datay, logx=False, logy=False, clear=False,
-                  name='No Name', label=None, marker=None):
+                  name='No Name', label=None, marker=None, xlabel="X",
+                  ylabel="Y"):
         self.label.set(name)
         if clear:
             self.a.clear()
@@ -66,6 +68,8 @@ class PlotArea(Frame):
         self.canvas.draw()
         self.canvas.get_tk_widget().pack(fill=BOTH, expand=1)
 
+        self.a.set_xlabel(xlabel)
+        self.a.set_ylabel(ylabel)
 
 class DataTree(Frame):
     def __init__(self, master):
