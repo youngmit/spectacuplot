@@ -45,7 +45,7 @@ class DataFilePinPower(DataFileH5):
     def __init__(self, name):
         DataFileH5.__init__(self, name)
         # Get the core map
-        self.core_map = self.f['core_map'].value
+        self.core_map = self.f['core_map'].value.T
 
         # Build the node tree
         self.data = DataTreeNode(self.f, '/')
@@ -59,7 +59,7 @@ class DataFilePinPower(DataFileH5):
 
         core_shape = numpy.shape(self.core_map)
 
-        blank = numpy.zeros([raw_shape[2], raw_shape[3]])
+        blank = numpy.zeros([raw_shape[0], raw_shape[1]])
 
         # Construct the global array of data using the core map. Each row is
         # constructed as an hstack, then the core is built using a vstack of all
@@ -69,7 +69,7 @@ class DataFilePinPower(DataFileH5):
             row_data = []
             for assem in self.core_map[row]:
                 if assem > 0:
-                    row_data.append(raw_data[assem-1, plane-1, :, :])
+                    row_data.append(raw_data[:, :, plane-1, assem-1])
                 else:
                     row_data.append(blank)
             rows.append(numpy.vstack(row_data))
