@@ -47,6 +47,14 @@ class DataFilePinPower(DataFileH5):
         # Get the core map
         self.core_map = self.f['core_map'].value.T
 
+        self.sym=self.f['core_sym'].value[0]
+
+        if(self.f['core_sym'].value[0] == '4'):
+            nxcore=numpy.shape(self.core_map)[0]
+            nycore=numpy.shape(self.core_map)[1]
+            if(nxcore != nycore):
+                raise StandardError("Only square core supported at present")
+
         # Build the node tree
         self.data = DataTreeNode(self.f, '/')
 
@@ -65,15 +73,38 @@ class DataFilePinPower(DataFileH5):
         # constructed as an hstack, then the core is built using a vstack of all
         # rows.
         rows = []
-        for row in xrange(core_shape[0]):
-            row_data = []
-            for assem in self.core_map[row]:
-                if assem > 0:
-                    row_data.append(raw_data[:, :, plane-1, assem-1])
-                else:
-                    row_data.append(blank)
-            rows.append(numpy.vstack(row_data))
-        data = numpy.hstack((rows))
+        if(self.sym == 4):
+            for row in xrange(core_shape[0]):
+                l_flip_y = False
+                if row < core_shape[0]/2:
+                    l_flip_y = True
+                row_data = []
+                for (col, assem) in enumerate(self.core_map[row]):
+                    l_flip_x = False
+                    if col < core_shape[1]/2:
+                        l_flip_x = True
+                    if assem > 0:
+                        assem_data = raw_data[:, :, plane-1, assem-1]
+                        if l_flip_x:
+                            assem_data = assem_data[::-1, :]
+                        if l_flip_y:
+                            assem_data = assem_data[:, ::-1]
+                        row_data.append(assem_data)
+                    else:
+                        row_data.append(blank)
+                rows.append(numpy.vstack(row_data))
+            data = numpy.hstack((rows))
+
+        else:
+            for row in xrange(core_shape[0]):
+                row_data = []
+                for assem in self.core_map[row]:
+                    if assem > 0:
+                        row_data.append(raw_data[:, :, plane-1, assem-1])
+                    else:
+                        row_data.append(blank)
+                rows.append(numpy.vstack(row_data))
+            data = numpy.hstack((rows))
         return data
 
     def get_data_info(self, data_id):
@@ -85,7 +116,7 @@ class DataFilePinPower(DataFileH5):
         shape = numpy.shape(data)
 
         if len(shape) == 4:
-            planes = shape[1]
+            planes = shape[2]
         return DataInfo(data, planes)
 
 
