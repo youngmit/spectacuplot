@@ -106,7 +106,8 @@ class OpSetPlot(Frame):
             set_path = info['values'][1]
 
             data = self.files[file_id].get_data_2d(set_path, self.current_plane)
-            print x, y, data[y, x]
+            index = self.nx*self.ny*(self.current_plane-1) + self.nx*y + x+1
+            print x, y, self.current_plane, index, data[y, x]
         elif self.pick_mode.get() == 'axial':
             self.add_axial(event)
 
@@ -228,6 +229,8 @@ class OpSetPlot(Frame):
             self.axial.update(1, info.n_planes)
 
             data = self.files[file_id].get_data_2d(set_path, self.current_plane)
+            self.nx = data.shape[0]
+            self.ny = data.shape[1]
 
             min_ = None
             max_ = None
