@@ -45,11 +45,11 @@ class DataFilePinPower(DataFileH5):
     def __init__(self, name):
         DataFileH5.__init__(self, name)
         # Get the core map
-        self.core_map = self.f['core_map'].value.T
+        self.core_map = self.f['CORE/core_map'].value.T
 
-        self.sym=self.f['core_sym'].value[0]
+        self.sym=self.f['CORE/core_sym'].value[0]
 
-        if(self.f['core_sym'].value[0] == '4'):
+        if(self.f['CORE/core_sym'].value[0] == '4'):
             nxcore=numpy.shape(self.core_map)[0]
             nycore=numpy.shape(self.core_map)[1]
             if(nxcore != nycore):

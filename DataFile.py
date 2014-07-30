@@ -14,7 +14,7 @@ def OpenDataFile(name):
         h5f = h5py.File(name)
         f = None
         for s in h5f.keys():
-            if s == 'core_map':
+            if s == 'CORE':
                 print "MPACT Pin Power File"
                 f = DataFilePinPower(name)
                 break
