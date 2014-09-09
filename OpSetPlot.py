@@ -20,13 +20,13 @@ class OpSetPlot(Frame):
         top_frame.pack(expand=1, fill=BOTH)
 
         bottom_frame = Frame(self)
-        bottom_frame.pack(expand=1, fill=BOTH)
+        bottom_frame.pack(fill=BOTH)
 
         plotctrl_frame = Frame(bottom_frame)
         plotctrl_frame.pack(side=TOP)
 
         slider_frame = Frame(bottom_frame)
-        slider_frame.pack(side=TOP, expand=1, fill=BOTH)
+        slider_frame.pack(side=TOP, fill=BOTH)
 
         scale_frame = Frame(bottom_frame)
         scale_frame.pack(side=TOP, expand=1, fill=BOTH)

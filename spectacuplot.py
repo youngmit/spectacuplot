@@ -33,7 +33,7 @@ class App(Tk):
 
         control_frame = Frame(left_frame)
         left_frame.pack(side=LEFT, fill=Y)
-        control_frame.pack(anchor=N)
+        control_frame.pack(anchor=N,fill=BOTH,expand=1)
 
         # Menu bar
         mb = Menu(self)
@@ -52,7 +52,7 @@ class App(Tk):
         # Notebook
         nb = Notebook(control_frame, name="controls")
         nb.enable_traversal()
-        nb.pack()#(expand=1, fill=BOTH)
+        nb.pack(expand=1, fill=BOTH)
 
         # Plot Area
         self.plot_frame = PlotArea(self)
