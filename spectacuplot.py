@@ -13,7 +13,6 @@ from OpDiffPlot import *
 from OpSetPlot import *
 from OpSpectrumPlot import *
 
-
 class App(Tk):
     opened_files = []
     img = None
@@ -49,6 +48,7 @@ class App(Tk):
 
         mb.add_cascade(label="File", menu=file_menu)
 
+
         # Notebook
         nb = Notebook(control_frame, name="controls")
         nb.enable_traversal()
@@ -60,12 +60,14 @@ class App(Tk):
 
         # Plot Sets
         self.plot_set = OpSetPlot(nb, self.opened_files, self.plot_frame)
+        print "hi3"
 
         # Diff Frame
         self.diff_frame = OpDiffPlot(nb, self.opened_files, self.plot_frame)
 
         nb.add(self.plot_set, text="Plot Set")
         nb.add(self.diff_frame, text="Diff Sets")
+
 
     def open_dialog(self, event=""):
         file_name = askopenfilename()
