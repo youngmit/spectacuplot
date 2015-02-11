@@ -2,6 +2,8 @@ from Tkinter import *
 
 from PlotUtils import *
 
+import numpy
+
 
 class OpSetPlot(Frame):
     spect_w = None

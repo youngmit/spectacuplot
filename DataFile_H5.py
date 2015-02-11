@@ -210,7 +210,7 @@ class DataFileSnVis(DataFileH5):
         data = self.get_data(data_id)
         if numpy.ndim(data) == 3:
             shape = numpy.shape(data)
-            if shape[2] > 1:
+            if shape[2] > 0:
                 if not plane is None:
                     data = data[plane-1, :, :]
                 else:
@@ -225,13 +225,13 @@ class DataFileSnVis(DataFileH5):
         # Number of planes
         if numpy.ndim(data) == 3:
             shape = numpy.shape(data)
-            if shape[2] > 1:
+            if shape[2] > 0:
                 planes = shape[0]
             else:
                 planes = 1
         else:
             planes = 1
-
+        print planes
         return DataInfo(data, planes=planes)
 
     def get_erg(self):
