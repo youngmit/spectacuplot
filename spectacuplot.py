@@ -4,6 +4,8 @@
 
 import sys
 import os
+import functools
+
 from Tkinter import *
 from tkFileDialog import askopenfilename
 
@@ -40,6 +42,26 @@ class App(Tk):
         file_menu.add_command(label='Open...', command=self.open_dialog,
                               accelerator='Ctrl-O')
         file_menu.add_command(label='Close All Files', command=self.close_files)
+
+        # Get recent files
+        self.recent = []
+        self.recent_commands = []
+        try:
+            recent_files = open(os.path.expanduser("~/spectacuplot_recent"), "r")
+            for f in recent_files:
+                self.recent.append(f.strip())
+                self.recent_commands.append(functools.partial(self.open, f.strip()))
+            recent_files.close()
+        except:
+            print "no recent files"
+
+        self.recent_cascade = Menu(file_menu)
+
+        for (f, c) in zip(self.recent, self.recent_commands):
+            self.recent_cascade.add_command(label=f, command=c)
+
+        file_menu.add_cascade(label="Recent Files", menu=self.recent_cascade)
+
         file_menu.add_command(label='Exit', command=self.quit)
 
         self.bind_all("<Control-o>", self.open_dialog)
@@ -60,7 +82,6 @@ class App(Tk):
 
         # Plot Sets
         self.plot_set = OpSetPlot(nb, self.opened_files, self.plot_frame)
-        print "hi3"
 
         # Diff Frame
         self.diff_frame = OpDiffPlot(nb, self.opened_files, self.plot_frame)
@@ -73,11 +94,30 @@ class App(Tk):
         file_name = askopenfilename()
         self.open(file_name)
 
+    def open_recent(self, value=""):
+        self.open(value)
+
     def open(self, file_name):
+        print "openning: ", file_name
         f = OpenDataFile(file_name)
         self.opened_files.append(f)
         self.plot_set.update(self.opened_files)
         self.diff_frame.update(self.opened_files)
+        # apply to recent files list
+        if not (file_name in self.recent):
+            self.recent.insert(0, file_name)
+            c = functools.partial(self.open, file_name)
+            self.recent_commands.insert(0, functools.partial(self.open, file_name))
+            self.recent_cascade.insert_command(0, label=file_name, command=c)
+            if len(self.recent) > 5:
+                self.recent.pop()
+        # poop out to a file
+        recent_files = file(os.path.expanduser("~/spectacuplot_recent"), "w")
+        for f in self.recent:
+            print f
+            recent_files.write(f + '\n')
+        recent_files.close()
+
 
     def close_files(self):
         self.opened_files = []

@@ -74,7 +74,8 @@ class DataInfo:
     '''Simple container class to store information about a dataset. Essentialy a
     struct.
     '''
-    def __init__(self, data, planes=None):
+    def __init__(self, data, planes=None, datatype="field"):
+        self.datatype = datatype
         if numpy.ndim(data) == 1 and numpy.size(data) == 1:
             self.ndim = 0
         else:

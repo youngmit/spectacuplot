@@ -193,18 +193,21 @@ class DataFileSnVis(DataFileH5):
             # Defer to the superclass get_data routine
             data = super(DataFileSnVis, self).get_data(data_id)
             # flip the data along the y axis, because nuclear engineers make no
-            # sense.
-            sh = numpy.shape(data)
-            if len(sh) == 3:
-                if self.flip_y:
-                    return data[:, ::-1, :]
-                else:
-                    return data
-            elif len(sh) == 2:
-                if self.flip_y:
-                    return data[::-1, :]
-                else:
-                    return data
+            # sense. Only do this for non-angle stuff
+            if data_id != "/angquad/omega":
+                sh = numpy.shape(data)
+                if len(sh) == 3:
+                    if self.flip_y:
+                        return data[:, ::-1, :]
+                    else:
+                        return data
+                elif len(sh) == 2:
+                    if self.flip_y:
+                        return data[::-1, :]
+                    else:
+                        return data
+            else:
+                return data
 
     def get_data_2d(self, data_id, plane=None):
         data = self.get_data(data_id)
@@ -222,17 +225,23 @@ class DataFileSnVis(DataFileH5):
     def get_data_info(self, data_id):
         data = self.get_data(data_id)
 
-        # Number of planes
-        if numpy.ndim(data) == 3:
-            shape = numpy.shape(data)
-            if shape[2] > 0:
-                planes = shape[0]
+        # Look for special datasets
+        if(data_id == "/angquad/omega"):
+            dtype = "angle"
+            planes = numpy.shape(data)[0]
+        else:
+            dtype = "field"
+            # Number of planes
+            if numpy.ndim(data) == 3:
+                shape = numpy.shape(data)
+                if shape[2] > 0:
+                    planes = shape[0]
+                else:
+                    planes = 1
             else:
                 planes = 1
-        else:
-            planes = 1
-        print planes
-        return DataInfo(data, planes=planes)
+        
+        return DataInfo(data, planes=planes, datatype=dtype)
 
     def get_erg(self):
         '''Returns the upper bounds of the energy groups in the data file. It is

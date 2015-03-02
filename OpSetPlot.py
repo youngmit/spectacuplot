@@ -222,34 +222,42 @@ class OpSetPlot(Frame):
 
         info = self.files[file_id].get_data_info(set_path)
 
-        if info.ndim == 0:
-            # Display scalar data
-            data = self.files[file_id].get_data(set_path)
-            self.scalarVar.set(set_path[1:] + ': ' + str(data))
-        else:
-            # Plot 2D data
+        # Plot a space field of data (flux, correction factors, etc.)
+        if info.datatype == "field":
+            if info.ndim == 0:
+                # Display scalar data
+                data = self.files[file_id].get_data(set_path)
+                self.scalarVar.set(set_path[1:] + ': ' + str(data))
+            else:
+                # Plot 2D data
+                self.axial.update(1, info.n_planes)
+
+                data = self.files[file_id].get_data_2d(set_path, self.current_plane)
+                self.nx = data.shape[0]
+                self.ny = data.shape[1]
+
+                min_ = None
+                max_ = None
+
+                # If we are doing global data scale, grab the scale bounds from the 3D
+                # data before we flatten it. The other options will be taken care of
+                # later.
+                if self.scale_mode.get() == 'global':
+                    min_ = info.glb_min
+                    max_ = info.glb_max
+                elif self.scale_mode.get() == 'manual':
+                    min_ = float(self.scale_min.get())
+                    max_ = float(self.scale_max.get())
+
+                name = set_path.split('/')[-1]
+
+                self.plot_area.plot(data, name, min_, max_)
+
+        # Plot an angle
+        if info.datatype == "angle":
             self.axial.update(1, info.n_planes)
-
-            data = self.files[file_id].get_data_2d(set_path, self.current_plane)
-            self.nx = data.shape[0]
-            self.ny = data.shape[1]
-
-            min_ = None
-            max_ = None
-
-            # If we are doing global data scale, grab the scale bounds from the 3D
-            # data before we flatten it. The other options will be taken care of
-            # later.
-            if self.scale_mode.get() == 'global':
-                min_ = info.glb_min
-                max_ = info.glb_max
-            elif self.scale_mode.get() == 'manual':
-                min_ = float(self.scale_min.get())
-                max_ = float(self.scale_max.get())
-
-            name = set_path.split('/')[-1]
-
-            self.plot_area.plot(data, name, min_, max_)
+            data = self.files[file_id].get_data(set_path)
+            self.plot_area.plot_angle(data[self.current_plane-1, :])
 
     def update(self, files):
         self.files = files

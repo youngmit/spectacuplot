@@ -8,6 +8,9 @@ from matplotlib import pyplot
 
 from DataFile import *
 
+import math
+import numpy
+
 
 class PlotArea(Frame):
     def __init__(self, master):
@@ -19,15 +22,24 @@ class PlotArea(Frame):
 
         self.cbar = None
 
+        self.pin_frame = Frame(master=self)
         self.f = Figure()
         self.a = self.f.add_subplot(111)
         self.a.set_xlabel("X Pin")
         self.a.set_ylabel("Y Pin")
 
-        self.canvas = FigureCanvasTkAgg(self.f, master=self)
+        self.canvas = FigureCanvasTkAgg(self.f, master=self.pin_frame)
         self.canvas.show()
         self.canvas.get_tk_widget().pack(fill=BOTH, expand=1)
-        self.toolbar = NavigationToolbar2TkAgg(self.canvas, self)
+        self.toolbar = NavigationToolbar2TkAgg(self.canvas, self.pin_frame)
+        self.pin_frame.pack(fill=BOTH, expand=1)
+
+        # Set up things to plot polar stuff
+        self.ang_frame = Frame(master=self)
+        self.f_ang, self.a_ang = pyplot.subplots(1, 2)
+        
+
+        self.canvas_ang = FigureCanvasTkAgg(self.f_ang, master=self.ang_frame)
 
     def plot(self, data, name='No Name', min_=None, max_=None, label=None,
              xlabel="X Pin", ylabel="Y Pin"):
@@ -53,6 +65,8 @@ class PlotArea(Frame):
         self.canvas.draw()
 
         self.canvas.get_tk_widget().pack(fill=BOTH, expand=1)
+        self.ang_frame.pack_forget()
+        self.pin_frame.pack(fill=BOTH, expand=1)
 
     def plot_line(self, datax, datay, logx=False, logy=False, clear=False,
                   name='No Name', label=None, marker=None, xlabel="X",
@@ -70,6 +84,26 @@ class PlotArea(Frame):
 
         self.a.set_xlabel(xlabel)
         self.a.set_ylabel(ylabel)
+
+    def plot_angle(self, data):
+        print data
+        azi_x = math.cos(data[0])
+        azi_y = math.sin(data[0])
+        pol_x = 1.0*numpy.sign(azi_x)
+        pol_y = math.sin(data[1])*numpy.sign(azi_y)
+
+        for ax in self.a_ang:
+            ax.cla()
+            ax.set_xlim(left  = -1.0, right = 1.0)
+            ax.set_ylim(bottom= -1.0, top   = 1.0)
+            ax.set_aspect("equal")
+
+        self.a_ang[0].plot([0, azi_x], [0, azi_y])
+        self.a_ang[1].plot([0, pol_x], [0, pol_y])
+        self.pin_frame.pack_forget()
+        self.canvas_ang.draw()
+        self.canvas_ang.get_tk_widget().pack(fill=BOTH, expand=1)
+        self.ang_frame.pack(fill=BOTH, expand=1)
 
 class DataTree(Frame):
     def __init__(self, master):

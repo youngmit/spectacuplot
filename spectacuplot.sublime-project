@@ -2,15 +2,8 @@
 	"folders":
 	[
 		{
-			"path": "/home/youngmit/codes/plot"
+			"follow_symlinks": true,
+			"path": "."
 		}
-	],
-    "settings":
-    
-    {
-        "rulers": [80],
-        "enable_auto_wrap": true,
-        "trim_trailing_white_space_on_save": true
-    }
-    
+	]
 }
