@@ -170,6 +170,7 @@ class OpSetPlot(Frame):
         y = int(event.ydata)
 
         axial = self.files[file_id].get_data(set_name)[:, y, x]
+        fname = self.files[file_id].name
 
         # Mesh. At some point, derrive this from the actual data
         mesh = numpy.linspace(0.0, 1.0, len(axial))
@@ -180,8 +181,7 @@ class OpSetPlot(Frame):
             self.axial_pa.pack(fill=BOTH, expand=1)
             # Bind the window destruction protocol to the clear function
             self.axial_w.protocol("WM_DELETE_WINDOW", self.kill_axial)
-        self.axial_pa.plot_line(mesh, axial, xlabel="Normalized Axial Height",
-                                ylabel="Scalar Flux")
+        self.axial_pa.plot_line(mesh, axial, xlabel="Normalized Axial Height", label=fname+set_name)
 
     def kill_spect(self):
         self.spect_w.destroy()

@@ -20,6 +20,13 @@ class App(Tk):
     img = None
     cbar = None
 
+    def _quit(self):
+        print "Trying to quit."
+        self.quit()
+        print "Tk.quit() completed"
+        self.desroy()
+        print "Tk.destroy() completed"
+
     def __init__(self):
         Tk.__init__(self)
 
@@ -62,7 +69,7 @@ class App(Tk):
 
         file_menu.add_cascade(label="Recent Files", menu=self.recent_cascade)
 
-        file_menu.add_command(label='Exit', command=self.quit)
+        file_menu.add_command(label='Exit', command=self._quit)
 
         self.bind_all("<Control-o>", self.open_dialog)
 
@@ -123,6 +130,8 @@ class App(Tk):
         self.opened_files = []
         self.plot_set.update(self.opened_files)
         self.diff_frame.update(self.opened_files)
+
+    
 
 
 app = App()

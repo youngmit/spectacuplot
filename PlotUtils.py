@@ -1,6 +1,9 @@
 from ttk import *
 from Tkinter import *
 
+import matplotlib
+matplotlib.use('TkAgg')
+
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from matplotlib.backends.backend_tkagg import NavigationToolbar2TkAgg
 from matplotlib.figure import Figure
@@ -25,13 +28,15 @@ class PlotArea(Frame):
         self.pin_frame = Frame(master=self)
         self.f = Figure()
         self.a = self.f.add_subplot(111)
-        self.a.set_xlabel("X Pin")
-        self.a.set_ylabel("Y Pin")
+        # self.a.set_xlabel("X Pin")
+        # self.a.set_ylabel("Y Pin")
 
         self.canvas = FigureCanvasTkAgg(self.f, master=self.pin_frame)
         self.canvas.show()
-        self.canvas.get_tk_widget().pack(fill=BOTH, expand=1)
+        self.canvas.get_tk_widget().pack(side=TOP, fill=BOTH, expand=1)
         self.toolbar = NavigationToolbar2TkAgg(self.canvas, self.pin_frame)
+        self.toolbar.update()
+        self.canvas._tkcanvas.pack(side=TOP, fill=BOTH, expand=1)
         self.pin_frame.pack(fill=BOTH, expand=1)
 
         # Set up things to plot polar stuff
@@ -79,6 +84,7 @@ class PlotArea(Frame):
         if logy:
             self.a.set_yscale('log')
         self.line = self.a.plot(datax, datay, marker=marker, label=label)
+        self.a.legend()
         self.canvas.draw()
         self.canvas.get_tk_widget().pack(fill=BOTH, expand=1)
 

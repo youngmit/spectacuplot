@@ -178,7 +178,6 @@ class DataFileSnVis(DataFileH5):
 
             # for now, flatten the proc_map to a 2d thing
             proc_map = self.proc_map[0]
-            # print proc_map
             rows = []
             for row in xrange(proc_map.shape[1]):
                 row_data = []
