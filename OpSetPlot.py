@@ -145,7 +145,7 @@ class OpSetPlot(Frame):
         for g in xrange(self.files[file_id].ng):
             g_name = set_pfx + "/" + str(g+1).zfill(3)
             data = self.files[file_id].get_data(g_name)
-            spect.append(data[0][y][x]*erg[g]/erg_w[g])
+            spect.append(data[self.current_plane-1][y][x]*erg[g]/erg_w[g])
 
         if self.spect_w is None:
             self.spect_w = Toplevel()

@@ -22,6 +22,7 @@ class DataFileH5(DataFile):
         path = os.path.split(self.path)
         self.name = path[len(path)-1]
         self.f = h5py.File(self.path)
+        self.f.close()
 
         self.set_names = self.f.keys()
 
@@ -35,6 +36,8 @@ class DataFileH5(DataFile):
             return data[0]
         else:
             return data
+    def close(self):
+        self.f.close()
 
 
 class DataFilePinPower(DataFileH5):
@@ -261,3 +264,5 @@ class DataFileSnVis(DataFileH5):
             except:
                 raise StandardError('There does not appear to be any energy ' +
                                     'structure information in this data file.')
+
+

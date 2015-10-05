@@ -127,6 +127,8 @@ class App(Tk):
 
 
     def close_files(self):
+        for f in self.opened_files:
+            f.close()
         self.opened_files = []
         self.plot_set.update(self.opened_files)
         self.diff_frame.update(self.opened_files)
