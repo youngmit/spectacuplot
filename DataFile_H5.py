@@ -21,8 +21,7 @@ class DataFileH5(DataFile):
         self.path = name
         path = os.path.split(self.path)
         self.name = path[len(path)-1]
-        self.f = h5py.File(self.path)
-        self.f.close()
+        self.f = h5py.File(self.path, 'r')
 
         self.set_names = self.f.keys()
 
@@ -208,6 +207,8 @@ class DataFileSnVis(DataFileH5):
                         return data[::-1, :]
                     else:
                         return data
+                else:
+                    return data
             else:
                 return data
 
@@ -227,10 +228,15 @@ class DataFileSnVis(DataFileH5):
     def get_data_info(self, data_id):
         data = self.get_data(data_id)
 
+
+        print "ndim: ", numpy.ndim(data)
         # Look for special datasets
         if(data_id == "/angquad/omega"):
             dtype = "angle"
             planes = numpy.shape(data)[0]
+        elif( numpy.ndim(data) == 1):
+            dtype = "line"
+            planes = 0
         else:
             dtype = "field"
             # Number of planes

@@ -51,7 +51,7 @@ class PlotArea(Frame):
         self.label.set(name)
         self.a.clear()
         if data.ndim == 3:
-            self.img = self.a.imshow(data[:, :, 0], interpolation="none",
+            self.img = self.a.imshow(data[:, :, 0], interpolation="nearest",
                                      origin="upper", vmin=min_, vmax=max_)
         else:
             self.img = self.a.imshow(data[:, :], interpolation="none",

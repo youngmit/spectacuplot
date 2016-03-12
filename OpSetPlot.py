@@ -168,6 +168,7 @@ class OpSetPlot(Frame):
         # get the index of the region that was clicked
         x = int(event.xdata)
         y = int(event.ydata)
+        print "axial X/Y:", x, y
 
         axial = self.files[file_id].get_data(set_name)[:, y, x]
         fname = self.files[file_id].name
@@ -258,6 +259,12 @@ class OpSetPlot(Frame):
             self.axial.update(1, info.n_planes)
             data = self.files[file_id].get_data(set_path)
             self.plot_area.plot_angle(data[self.current_plane-1, :])
+
+        # Plot a line
+        if info.datatype == "line":
+            data = self.files[file_id].get_data(set_path)
+            self.plot_area.plot_line(range(len(data)), data, logy=False)
+
 
     def update(self, files):
         self.files = files
