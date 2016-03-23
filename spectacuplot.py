@@ -15,17 +15,14 @@ from OpDiffPlot import *
 from OpSetPlot import *
 from OpSpectrumPlot import *
 
+def quit():
+    app.quit()
+    app.destroy()
+
 class App(Tk):
     opened_files = []
     img = None
     cbar = None
-
-    def _quit(self):
-        print "Trying to quit."
-        self.quit()
-        print "Tk.quit() completed"
-        self.desroy()
-        print "Tk.destroy() completed"
 
     def __init__(self):
         Tk.__init__(self)
@@ -69,7 +66,9 @@ class App(Tk):
 
         file_menu.add_cascade(label="Recent Files", menu=self.recent_cascade)
 
-        file_menu.add_command(label='Exit', command=self._quit)
+        # Set up stuff for quitting Spectacuplot
+        file_menu.add_command(label='Exit', command=quit)
+        self.protocol("WM_DELETE_WINDOW", quit)
 
         self.bind_all("<Control-o>", self.open_dialog)
 
