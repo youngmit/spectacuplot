@@ -53,9 +53,9 @@ class OpSetPlot(Frame):
     def pick(self, event):
         if not event.dblclick:
             return
-        if self.pick_mode.get() == 'spectra':
+        if self.controls.pick_mode.get() == 'spectra':
             self.add_spectrum(event)
-        elif self.pick_mode.get() == 'value':
+        elif self.controls.pick_mode.get() == 'value':
             x = int(event.xdata)
             y = int(event.ydata)
             item = self.file_tree.tree.selection()[0]
@@ -66,7 +66,7 @@ class OpSetPlot(Frame):
             data = self.files[file_id].get_data_2d(set_path, self.current_plane)
             index = self.nx*self.ny*(self.current_plane-1) + self.nx*y + x+1
             print x, y, self.current_plane, index, data[y, x]
-        elif self.pick_mode.get() == 'axial':
+        elif self.controls.pick_mode.get() == 'axial':
             self.add_axial(event)
 
     def add_spectrum(self, event):
