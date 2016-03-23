@@ -228,8 +228,6 @@ class DataFileSnVis(DataFileH5):
     def get_data_info(self, data_id):
         data = self.get_data(data_id)
 
-
-        print "ndim: ", numpy.ndim(data)
         # Look for special datasets
         if(data_id == "/angquad/omega"):
             dtype = "angle"

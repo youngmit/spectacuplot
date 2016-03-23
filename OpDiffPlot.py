@@ -1,6 +1,7 @@
 from Tkinter import *
 
-from PlotUtils import *
+from PlotArea import *
+from AxialSlider import *
 
 import numpy
 import math

@@ -1,6 +1,6 @@
 from Tkinter import *
 
-from PlotUtils import *
+from PlotArea import *
 
 
 class OpSpectrumPlot(Frame):

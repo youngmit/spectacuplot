@@ -1,15 +1,16 @@
 from Tkinter import *
 
-from PlotUtils import *
+from PlotArea import *
+
+from PlotControls_3D import *
 
 import numpy
-
 
 class OpSetPlot(Frame):
     spect_w = None
     axial_w = None
 
-    def __init__(self, master, files, plot_area):
+    def __init__(self, master, files, plot_area=None):
         Frame.__init__(self, master)
 
         self.files = files
@@ -18,20 +19,9 @@ class OpSetPlot(Frame):
         self.spectra.set(False)
         self.current_plane = 1
 
+        # The top frame only holds the file tree
         top_frame = Frame(self)
         top_frame.pack(expand=1, fill=BOTH)
-
-        bottom_frame = Frame(self)
-        bottom_frame.pack(fill=BOTH)
-
-        plotctrl_frame = Frame(bottom_frame)
-        plotctrl_frame.pack(side=TOP)
-
-        slider_frame = Frame(bottom_frame)
-        slider_frame.pack(side=TOP, fill=BOTH)
-
-        scale_frame = Frame(bottom_frame)
-        scale_frame.pack(side=TOP, expand=1, fill=BOTH)
 
         # File Tree
         Label(top_frame, text="File/Dataset:").pack(anchor=W)
@@ -41,52 +31,18 @@ class OpSetPlot(Frame):
         self.file_tree.tree.bind("<Double-Button-1>", self.plot)
         self.file_tree.tree.bind("<Return>", self.plot)
 
-        self.plot_set = Button(plotctrl_frame, text="Plot Dataset",
+        self.plot_set = Button(top_frame, text="Plot Dataset",
                                command=self.plot)
         self.plot_set.pack(side=LEFT)
 
-        # Spectrum plotting stuff
-        self.pick_mode = StringVar()
-        self.pick_mode.set('value')
+        self.controls = PlotControls_3D(self, self.plot_area)
+        self.controls.pack(fill=BOTH)
 
-        Radiobutton(plotctrl_frame, text="Value", variable=self.pick_mode,
-                    value='value').pack(anchor=W)
-        Radiobutton(plotctrl_frame, text="Spectra", variable=self.pick_mode,
-                    value='spectra').pack(anchor=W)
-        Radiobutton(plotctrl_frame, text="Axial", variable=self.pick_mode,
-                    value='axial').pack(anchor=W)
-
-        # Axial Slider
-        Label(slider_frame, text="Axial plane:").pack(anchor=W)
-        self.axial = AxialSlider(slider_frame, command=self.update_plot)
-        self.axial.pack(side=BOTTOM, expand=1, fill=BOTH)
-        # Scale selector
-        Label(scale_frame, text="Color Scale:").pack(anchor=W)
-        self.scale_mode = StringVar()
-        self.scale_mode.set('active')
-        self.scale_plane = StringVar()
-        Radiobutton(scale_frame, text="Active Plane", variable=self.scale_mode,
-                    value='active', command=self.change_scale_mode).pack(anchor=W)
-        Radiobutton(scale_frame, text="Global", variable=self.scale_mode,
-                    value='global', command=self.change_scale_mode).pack(anchor=W)
-        Radiobutton(scale_frame, text="Manual", variable=self.scale_mode,
-                    value='manual', command=self.change_scale_mode).pack(anchor=W)
-        self.scale_min = StringVar()
-        self.scale_min.set('0.0')
-        self.scale_max = StringVar()
-        self.scale_max.set('1.0')
-        self.scale_min_entry = LabeledEntry(scale_frame, text="Min:", width=10,
-                                            textvariable=self.scale_min)
-        self.scale_min_entry.pack(side=LEFT)
-        self.scale_min_entry.disable()
-        self.scale_max_entry = LabeledEntry(scale_frame, text="Max:", width=10,
-                                            textvariable=self.scale_max)
-        self.scale_max_entry.pack(side=LEFT)
-        self.scale_max_entry.disable()
+        
 
         # Label for displaying scalar data
         self.scalarVar = StringVar()
-        Label(bottom_frame, textvariable=self.scalarVar).pack(anchor=W)
+        #Label(bottom_frame, textvariable=self.scalarVar).pack(anchor=W)
 
         # Register plot with callback
         self.cid = self.plot_area.canvas.mpl_connect('button_press_event',
@@ -193,12 +149,7 @@ class OpSetPlot(Frame):
         self.axial_w = None
 
     def change_scale_mode(self):
-        if self.scale_mode.get() == 'manual':
-            self.scale_min_entry.enable()
-            self.scale_max_entry.enable()
-        else:
-            self.scale_min_entry.disable()
-            self.scale_max_entry.disable()
+        self.controls.update_scales()
         self.plot()
 
     def select_file(self, file_id=-1):
@@ -211,8 +162,8 @@ class OpSetPlot(Frame):
             self.data_list.insert(END, dset)
 
     def update_plot(self, plane):
-        if self.current_plane != self.axial.get():
-            self.current_plane = self.axial.get()
+        if self.current_plane != self.controls.plane():
+            self.current_plane = self.controls.plane()
             self.plot()
 
     def plot(self, dummy=-1):
@@ -231,7 +182,7 @@ class OpSetPlot(Frame):
                 self.scalarVar.set(set_path[1:] + ': ' + str(data))
             else:
                 # Plot 2D data
-                self.axial.update(1, info.n_planes)
+                self.controls.update(info)
 
                 data = self.files[file_id].get_data_2d(set_path, self.current_plane)
                 self.nx = data.shape[0]
@@ -243,12 +194,12 @@ class OpSetPlot(Frame):
                 # If we are doing global data scale, grab the scale bounds from the 3D
                 # data before we flatten it. The other options will be taken care of
                 # later.
-                if self.scale_mode.get() == 'global':
+                if self.controls.scale_mode.get() == 'global':
                     min_ = info.glb_min
                     max_ = info.glb_max
-                elif self.scale_mode.get() == 'manual':
-                    min_ = float(self.scale_min.get())
-                    max_ = float(self.scale_max.get())
+                elif self.controls.scale_mode.get() == 'manual':
+                    min_ = float(self.controls.scale_min.get())
+                    max_ = float(self.controls.scale_max.get())
 
                 name = set_path.split('/')[-1]
 
@@ -263,7 +214,7 @@ class OpSetPlot(Frame):
         # Plot a line
         if info.datatype == "line":
             data = self.files[file_id].get_data(set_path)
-            self.plot_area.plot_line(range(len(data)), data, logy=False)
+            self.plot_area.plot_line(range(len(data)), data, logy=True)
 
 
     def update(self, files):

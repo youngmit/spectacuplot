@@ -10,6 +10,7 @@ from matplotlib.figure import Figure
 from matplotlib import pyplot
 
 from DataFile import *
+from DataTree import *
 
 import math
 import numpy
@@ -25,19 +26,19 @@ class PlotArea(Frame):
 
         self.cbar = None
 
-        self.pin_frame = Frame(master=self)
+        self.plot_frame = Frame(master=self)
         self.f = Figure()
         self.a = self.f.add_subplot(111)
         # self.a.set_xlabel("X Pin")
         # self.a.set_ylabel("Y Pin")
 
-        self.canvas = FigureCanvasTkAgg(self.f, master=self.pin_frame)
+        self.canvas = FigureCanvasTkAgg(self.f, master=self.plot_frame)
         self.canvas.show()
         self.canvas.get_tk_widget().pack(side=TOP, fill=BOTH, expand=1)
-        self.toolbar = NavigationToolbar2TkAgg(self.canvas, self.pin_frame)
+        self.toolbar = NavigationToolbar2TkAgg(self.canvas, self.plot_frame)
         self.toolbar.update()
         self.canvas._tkcanvas.pack(side=TOP, fill=BOTH, expand=1)
-        self.pin_frame.pack(fill=BOTH, expand=1)
+        self.plot_frame.pack(fill=BOTH, expand=1)
 
         # Set up things to plot polar stuff
         self.ang_frame = Frame(master=self)
@@ -71,7 +72,7 @@ class PlotArea(Frame):
 
         self.canvas.get_tk_widget().pack(fill=BOTH, expand=1)
         self.ang_frame.pack_forget()
-        self.pin_frame.pack(fill=BOTH, expand=1)
+        self.plot_frame.pack(fill=BOTH, expand=1)
 
     def plot_line(self, datax, datay, logx=False, logy=False, clear=False,
                   name='No Name', label=None, marker=None, xlabel="X",
@@ -106,112 +107,7 @@ class PlotArea(Frame):
 
         self.a_ang[0].plot([0, azi_x], [0, azi_y])
         self.a_ang[1].plot([0, pol_x], [0, pol_y])
-        self.pin_frame.pack_forget()
+        self.plot_frame.pack_forget()
         self.canvas_ang.draw()
         self.canvas_ang.get_tk_widget().pack(fill=BOTH, expand=1)
         self.ang_frame.pack(fill=BOTH, expand=1)
-
-class DataTree(Frame):
-    def __init__(self, master):
-        Frame.__init__(self, master, bg="black")
-        scroll = Scrollbar(self)
-
-        self.tree = Treeview(self, yscrollcommand=scroll.set)
-        scroll.config(command=self.tree.yview)
-
-        self.items = []
-
-        self.tree.pack(side=LEFT, fill=BOTH, expand=1)
-        scroll.pack(side=LEFT, fill=Y)
-
-    def update(self, files):
-        self.files = files
-
-        # reversing, since removing a node with children removes the children as
-        # well. there might be a cleaner way to do this by clearing each of the
-        # file nodes, but that might add more burden to the garbage collector
-        # down the line.
-        for item in reversed(self.items):
-            self.tree.delete(item)
-
-        self.items = []
-
-        for (i, datafile) in enumerate(self.files):
-            self.add_file(datafile, i)
-
-    def add_file(self, f, f_id):
-        file_id = self.tree.insert("", "end", text=f.name)
-        self.items.append(file_id)
-
-        self.add_node(file_id, f.data, f_id)
-
-    def add_node(self, p, node, f_id):
-        if node.name != '':
-            node_id = self.tree.insert(p, "end", text=node.name,
-                                       values=(f_id, node.path))
-            self.items.append(node_id)
-        else:
-            node_id = p
-
-        if node.is_grp:
-            for child in node.children:
-                self.add_node(node_id, child, f_id)
-
-
-class AxialSlider(Frame):
-    def __init__(self, master, command=None):
-        Frame.__init__(self, master)
-
-        self.slider = Scale(self, from_=1, to=1, orient=HORIZONTAL,
-                            command=command)
-        self.disable()
-
-        self.slider.pack(expand=1, fill=BOTH)
-
-    def update(self, from_, to):
-        self.slider.config(from_=from_, to=to, state=NORMAL)
-
-        if to > 1:
-            self.enable()
-        else:
-            self.disable()
-
-    def get(self):
-        return self.slider.get()
-
-    def enable(self):
-        self.slider.config(state=NORMAL, fg='#000', sliderrelief=RAISED)
-
-    def disable(self):
-        self.slider.config(state=DISABLED, fg='#888', sliderrelief=FLAT)
-
-
-class LabeledEntry(Frame):
-    def __init__(self, master, textvariable=None, text='', width=None,
-                 disabled=False):
-        Frame.__init__(self, master)
-
-        self.disabled = False
-
-        self.label = Label(self, text=text)
-        self.label.pack(side=LEFT)
-
-        self.entry = Entry(self, textvariable=textvariable, width=width)
-        self.entry.pack(side=LEFT)
-
-        if disabled:
-            self.disable()
-
-    def enable(self):
-        self.disabled = False
-        self.entry.config(state=NORMAL, fg='#000')
-        self.label.config(fg='#000')
-
-    def disable(self):
-        self.disabled = True
-        self.entry.config(state=DISABLED, fg='#888')
-        self.label.config(fg='#888')
-
-
-class Error(Exception):
-    pass

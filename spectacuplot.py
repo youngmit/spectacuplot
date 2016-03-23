@@ -9,7 +9,7 @@ import functools
 from Tkinter import *
 from tkFileDialog import askopenfilename
 
-from PlotUtils import *
+from PlotArea import *
 
 from OpDiffPlot import *
 from OpSetPlot import *
@@ -87,14 +87,14 @@ class App(Tk):
         self.plot_frame = PlotArea(self)
         self.plot_frame.pack(side=LEFT, fill=BOTH, expand=1)
 
-        # Plot Sets
-        self.plot_set = OpSetPlot(nb, self.opened_files, self.plot_frame)
+        # This will be used as the notbook tab for plotting individual datasets
+        self.plot_set_tab = OpSetPlot(nb, self.opened_files, self.plot_frame)
 
-        # Diff Frame
-        self.diff_frame = OpDiffPlot(nb, self.opened_files, self.plot_frame)
+        # This will be used as the notebook tab for plotting dataset diffs
+        self.diff_tab = OpDiffPlot(nb, self.opened_files, self.plot_frame)
 
-        nb.add(self.plot_set, text="Plot Set")
-        nb.add(self.diff_frame, text="Diff Sets")
+        nb.add(self.plot_set_tab, text="Plot Set")
+        nb.add(self.diff_tab, text="Diff Sets")
 
 
     def open_dialog(self, event=""):
@@ -108,8 +108,8 @@ class App(Tk):
         print "openning: ", file_name
         f = OpenDataFile(file_name)
         self.opened_files.append(f)
-        self.plot_set.update(self.opened_files)
-        self.diff_frame.update(self.opened_files)
+        self.plot_set_tab.update(self.opened_files)
+        self.diff_tab.update(self.opened_files)
         # apply to recent files list
         if not (file_name in self.recent):
             self.recent.insert(0, file_name)
@@ -130,8 +130,8 @@ class App(Tk):
         for f in self.opened_files:
             f.close()
         self.opened_files = []
-        self.plot_set.update(self.opened_files)
-        self.diff_frame.update(self.opened_files)
+        self.plot_set_tab.update(self.opened_files)
+        self.diff_tab.update(self.opened_files)
 
     
 
