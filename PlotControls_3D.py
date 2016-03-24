@@ -4,7 +4,7 @@ from AxialSlider import *
 from LabeledEntry import *
 
 class PlotControls_3D(Frame):
-    def __init__(self, master, plot_area):
+    def __init__(self, master, consumer):
         Frame.__init__(self, master)
 
         pick_mode_frame = Frame(self)
@@ -14,22 +14,22 @@ class PlotControls_3D(Frame):
         slider_frame.pack(side=TOP, fill=BOTH)
 
         scale_frame = Frame(self)
-        scale_frame.pack(side=TOP, expand=1, fill=BOTH)
+        scale_frame.pack(side=LEFT, expand=1, fill=BOTH)
 
         # pick mode radio buttons
         self.pick_mode = StringVar()
         self.pick_mode.set('value')
 
         Radiobutton(pick_mode_frame, text="Value", variable=self.pick_mode,
-                    value='value').pack(anchor=W)
+                    value='value').pack(side=LEFT, anchor=W)
         Radiobutton(pick_mode_frame, text="Spectra", variable=self.pick_mode,
-                    value='spectra').pack(anchor=W)
+                    value='spectra').pack(side=LEFT, anchor=W)
         Radiobutton(pick_mode_frame, text="Axial", variable=self.pick_mode,
-                    value='axial').pack(anchor=W)
+                    value='axial').pack(side=LEFT, anchor=W)
 
         # Axial Slider
         Label(slider_frame, text="Axial plane:").pack(anchor=W)
-        self.axial = AxialSlider(slider_frame, command=master.update_plot)
+        self.axial = AxialSlider(slider_frame, command=consumer.update_plot)
         self.axial.pack(side=BOTTOM, expand=1, fill=BOTH)
 
         # Scale selector
@@ -38,11 +38,11 @@ class PlotControls_3D(Frame):
         self.scale_mode.set('active')
         self.scale_plane = StringVar()
         Radiobutton(scale_frame, text="Active Plane", variable=self.scale_mode,
-                    value='active', command=master.change_scale_mode).pack(anchor=W)
+                    value='active', command=consumer.change_scale_mode).pack(side=LEFT, anchor=W)
         Radiobutton(scale_frame, text="Global", variable=self.scale_mode,
-                    value='global', command=master.change_scale_mode).pack(anchor=W)
+                    value='global', command=consumer.change_scale_mode).pack(side=LEFT, anchor=W)
         Radiobutton(scale_frame, text="Manual", variable=self.scale_mode,
-                    value='manual', command=master.change_scale_mode).pack(anchor=W)
+                    value='manual', command=consumer.change_scale_mode).pack(side=LEFT, anchor=W)
         self.scale_min = StringVar()
         self.scale_min.set('0.0')
         self.scale_max = StringVar()
