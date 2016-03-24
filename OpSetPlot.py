@@ -3,6 +3,7 @@ from Tkinter import *
 from PlotArea import *
 
 from PlotControls_3D import *
+from PlotControls_1D import *
 
 import numpy
 
@@ -23,6 +24,7 @@ class OpSetPlot(Frame):
         top_frame = Frame(self)
         top_frame.pack(expand=1, fill=BOTH)
 
+
         # File Tree
         Label(top_frame, text="File/Dataset:").pack(anchor=W)
 
@@ -35,14 +37,23 @@ class OpSetPlot(Frame):
                                command=self.plot)
         self.plot_set.pack(side=LEFT)
 
-        self.controls = PlotControls_3D(self, self.plot_area)
+        # Controls pane lives between the top and bottom pane. it needs a 
+        # middle_frame container so that it doesnt move if the controls change
+        self.middle_frame = Frame(self, relief=GROOVE, borderwidth=3, padx=5,
+            pady=5)
+        self.controls_frame = Frame(self.middle_frame, relief=SOLID)
+        self.controls = PlotControls_3D(self.controls_frame, self)
         self.controls.pack(fill=BOTH)
+        self.controls_frame.pack(fill=BOTH)
+        self.middle_frame.pack(fill=BOTH)
 
-        
+        # Bottom pane just stores the scalar value viewer
+        bottom_frame = Frame(self)
+        bottom_frame.pack(fill=BOTH)
 
         # Label for displaying scalar data
         self.scalarVar = StringVar()
-        #Label(bottom_frame, textvariable=self.scalarVar).pack(anchor=W)
+        Label(bottom_frame, textvariable=self.scalarVar).pack(anchor=W)
 
         # Register plot with callback
         self.cid = self.plot_area.canvas.mpl_connect('button_press_event',
@@ -166,6 +177,15 @@ class OpSetPlot(Frame):
             self.current_plane = self.controls.plane()
             self.plot()
 
+    def change_1d(self):
+        logx = (self.controls.x_type.get() == 'log')
+        logy = (self.controls.y_type.get() == 'log')
+        self.plot_area.set_log(logx, logy)
+
+    def reset_1d(self):
+        self.plot_area.reset()
+
+
     def plot(self, dummy=-1):
         item = self.file_tree.tree.selection()[0]
         info = self.file_tree.tree.item(item)
@@ -181,6 +201,13 @@ class OpSetPlot(Frame):
                 data = self.files[file_id].get_data(set_path)
                 self.scalarVar.set(set_path[1:] + ': ' + str(data))
             else:
+                # Switch to the 2D/3D controls if necessary
+                if not isinstance(self.controls, PlotControls_3D):
+                    self.controls_frame.destroy()
+                    self.controls_frame = Frame(self.middle_frame, relief=SUNKEN)
+                    self.controls = PlotControls_3D(self.controls_frame, self)
+                    self.controls.pack(fill=BOTH)
+                    self.controls_frame.pack(fill=BOTH)
                 # Plot 2D data
                 self.controls.update(info)
 
@@ -213,8 +240,15 @@ class OpSetPlot(Frame):
 
         # Plot a line
         if info.datatype == "line":
+            # Switch to the line plot controls if necessary
+            if not isinstance(self.controls, PlotControls_1D):
+                self.controls_frame.destroy()
+                self.controls_frame = Frame(self.middle_frame, relief=SUNKEN)
+                self.controls = PlotControls_1D(self.controls_frame, self)
+                self.controls.pack(fill=BOTH)
+                self.controls_frame.pack(fill=BOTH)
             data = self.files[file_id].get_data(set_path)
-            self.plot_area.plot_line(range(len(data)), data, logy=True)
+            self.plot_area.plot_line(range(len(data)), data)
 
 
     def update(self, files):
