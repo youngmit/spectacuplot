@@ -27,17 +27,8 @@ class PlotArea(Frame):
         self.cbar = None
 
         self.plot_frame = Frame(master=self)
-        self.f = Figure()
-        self.a = self.f.add_subplot(111)
-        # self.a.set_xlabel("X Pin")
-        # self.a.set_ylabel("Y Pin")
-
-        self.canvas = FigureCanvasTkAgg(self.f, master=self.plot_frame)
-        self.canvas.show()
-        self.canvas.get_tk_widget().pack(side=TOP, fill=BOTH, expand=1)
-        self.toolbar = NavigationToolbar2TkAgg(self.canvas, self.plot_frame)
-        self.toolbar.update()
-        self.canvas._tkcanvas.pack(side=TOP, fill=BOTH, expand=1)
+        self.inner_frame = Frame(self.plot_frame)
+        self.reset()
         self.plot_frame.pack(fill=BOTH, expand=1)
 
         # Set up things to plot polar stuff
@@ -46,6 +37,23 @@ class PlotArea(Frame):
         
 
         self.canvas_ang = FigureCanvasTkAgg(self.f_ang, master=self.ang_frame)
+
+    # Wipe out whetever is currently in the figure
+    def reset(self):
+        self.inner_frame.destroy()
+        self.inner_frame = Frame(self.plot_frame)
+        self.f = Figure()
+        self.a = self.f.add_subplot(111)
+        # self.a.set_xlabel("X Pin")
+        # self.a.set_ylabel("Y Pin")
+
+        self.canvas = FigureCanvasTkAgg(self.f, master=self.inner_frame)
+        self.canvas.show()
+        self.canvas.get_tk_widget().pack(side=TOP, fill=BOTH, expand=1)
+        self.toolbar = NavigationToolbar2TkAgg(self.canvas, self.inner_frame)
+        self.toolbar.update()
+        self.canvas._tkcanvas.pack(side=TOP, fill=BOTH, expand=1)
+        self.inner_frame.pack(fill=BOTH, expand=1)
 
     def plot(self, data, name='No Name', min_=None, max_=None, label=None,
              xlabel="X Pin", ylabel="Y Pin"):
@@ -91,6 +99,20 @@ class PlotArea(Frame):
 
         self.a.set_xlabel(xlabel)
         self.a.set_ylabel(ylabel)
+
+    def set_log(self, logx, logy):
+        print logx, logy
+        if logx:
+            self.a.set_xscale('log')
+        else:
+            self.a.set_xscale('linear')
+        if logy:
+            self.a.set_yscale('log')
+        else:
+            self.a.set_yscale('linear')
+
+        self.canvas.draw()
+        self.canvas.get_tk_widget().pack(fill=BOTH, expand=1)
 
     def plot_angle(self, data):
         print data
