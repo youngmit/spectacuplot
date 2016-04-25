@@ -41,5 +41,6 @@ button = Tk.Button(master=root, text='Quit', command=_quit)
 button.pack(side=Tk.BOTTOM)
 
 Tk.mainloop()
+#root.destroy()
 # If you put root.destroy() here, it will cause an error if
 # the window is closed with the window manager.

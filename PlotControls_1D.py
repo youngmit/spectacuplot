@@ -9,6 +9,15 @@ class PlotControls_1D(Frame):
         self.x_type = StringVar()
         self.x_type.set('linear')
 
+        self.abscissa_var = IntVar()
+
+        abscissa_frame = Frame(axis_frame)
+        Label(abscissa_frame, text="Abcissa:").pack(anchor=W)
+        Checkbutton(abscissa_frame, text="Use Custom",
+            variable=self.abscissa_var).pack(side=TOP, anchor=W)
+
+        abscissa_frame.pack(side=LEFT)
+
         axis_frame_x = Frame(axis_frame)
         Label(axis_frame_x, text="X Axis:").pack(anchor=W)
         Radiobutton(axis_frame_x, text="Linear", variable=self.x_type,
@@ -31,3 +40,6 @@ class PlotControls_1D(Frame):
         axis_frame.pack()
 
         Button(self, text="Reset", command=consumer.reset_1d).pack()
+
+    def custom_abscissa(self):
+        return self.abscissa_var.get() > 0

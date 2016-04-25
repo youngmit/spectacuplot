@@ -104,7 +104,7 @@ class App(Tk):
         self.open(value)
 
     def open(self, file_name):
-        print "openning: ", file_name
+        print "opening: ", file_name
         f = OpenDataFile(file_name)
         self.opened_files.append(f)
         self.plot_set_tab.update(self.opened_files)

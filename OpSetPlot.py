@@ -208,6 +208,10 @@ class OpSetPlot(Frame):
                     self.controls = PlotControls_3D(self.controls_frame, self)
                     self.controls.pack(fill=BOTH)
                     self.controls_frame.pack(fill=BOTH)
+                    self.plot_area.reset()
+                    # Register plot with callback
+                    self.cid = self.plot_area.canvas.mpl_connect('button_press_event',
+                                                     self.pick)
                 # Plot 2D data
                 self.controls.update(info)
 
@@ -247,8 +251,23 @@ class OpSetPlot(Frame):
                 self.controls = PlotControls_1D(self.controls_frame, self)
                 self.controls.pack(fill=BOTH)
                 self.controls_frame.pack(fill=BOTH)
+                self.plot_area.reset()
+
             data = self.files[file_id].get_data(set_path)
-            self.plot_area.plot_line(range(len(data)), data)
+            # Look for abscissae
+            x_label = "X"
+            if self.controls.custom_abscissa():
+                abscissa_path = '/'.join(set_path.split('/')[:-1]+["abscissae"])
+                try:
+                    abscissae = self.files[file_id].get_data(abscissa_path)
+                    x_label = "Time (s)"
+                except:
+                    abscissae = range(len(data))
+            else:
+                abscissae = range(len(data))
+            label = self.files[file_id].name + ": " + (set_path.split("/")[-1])
+            y_label = set_path.split("/")[-1]
+            self.plot_area.plot_line(abscissae, data, label=label, xlabel=x_label, ylabel=y_label)
 
 
     def update(self, files):
