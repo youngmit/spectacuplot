@@ -158,7 +158,7 @@ class OpSetPlot(Frame):
             data = self.files[file_id].get_data(g_name)
             spect.append(data[self.current_plane-1][y][x]*erg[g]/erg_w[g])
 
-        self.spawn_popout(axes="polar")
+        self.spawn_popout()
 
         self.popout_pa.plot_line(erg, spect, logx=True)
 
