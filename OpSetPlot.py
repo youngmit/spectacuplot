@@ -8,8 +8,7 @@ from PlotControls_1D import *
 import numpy
 
 class OpSetPlot(Frame):
-    spect_w = None
-    axial_w = None
+    popout_w = None
 
     def __init__(self, master, files, plot_area=None):
         Frame.__init__(self, master)
@@ -80,7 +79,51 @@ class OpSetPlot(Frame):
             print pick_x, pick_y, self.current_plane, index, data[pick_y, pick_x]
         elif self.controls.pick_mode.get() == 'axial':
             self.add_axial(event)
+        elif self.controls.pick_mode.get() == 'azimuthal':
+            self.add_azimuthal(event)
 
+    def add_azimuthal(self, event):
+        pick_x = int(round(event.xdata))
+        pick_y = int(round(event.ydata))
+        
+        item = self.file_tree.tree.selection()[0]
+        info = self.file_tree.tree.item(item)
+        file_id = info['values'][0]
+        set_path = info['values'][1]
+
+        # Shave off the last section of the path, since we will be iterating
+        # over it anyways
+        path_decomp = set_path.split('/')[:-1]
+        base_path = ""
+        for s in path_decomp:
+            base_path += s + "/"
+        print base_path
+        
+        # get angles
+        (azimuthal, polar) = self.files[file_id].get_angles()
+        # crop to the pozitive half-space
+        n_polar = len(polar)
+        n_azi = len(azimuthal)
+
+        # For now, only look at the first polar angle
+        values = numpy.zeros(n_azi)
+
+        file = self.files[file_id]
+
+        for (i, idata) in enumerate(xrange(0, n_polar*n_azi, n_polar)):
+            path = base_path + str(idata).zfill(3)
+            values[i] = file.get_data_2d(path, self.current_plane)[pick_y, pick_x]
+        
+        # sort for increasing azimuthal
+        azimuthal, values = (list(x) for x in zip(*sorted(zip(azimuthal,values))))
+        azimuthal.append(azimuthal[0])
+        values.append(values[0])
+        
+        self.spawn_popout(axes="polar")
+
+        self.popout_pa.plot_line(azimuthal, values)
+        
+        
     def add_spectrum(self, event):
         # Get energy values
         item = self.file_tree.tree.selection()[0]
@@ -115,14 +158,9 @@ class OpSetPlot(Frame):
             data = self.files[file_id].get_data(g_name)
             spect.append(data[self.current_plane-1][y][x]*erg[g]/erg_w[g])
 
-        if self.spect_w is None:
-            self.spect_w = Toplevel()
-            self.spect_pa = PlotArea(self.spect_w)
-            self.spect_pa.pack(fill=BOTH, expand=1)
-            # Bind the window destruction protocol to the clear function
-            self.spect_w.protocol("WM_DELETE_WINDOW", self.kill_spect)
+        self.spawn_popout(axes="polar")
 
-        self.spect_pa.plot_line(erg, spect, logx=True)
+        self.popout_pa.plot_line(erg, spect, logx=True)
 
     def add_axial(self, event):
         # Get energy values
@@ -144,21 +182,25 @@ class OpSetPlot(Frame):
         # Mesh. At some point, derrive this from the actual data
         mesh = numpy.linspace(0.0, 1.0, len(axial))
 
-        if self.axial_w is None:
-            self.axial_w = Toplevel()
-            self.axial_pa = PlotArea(self.axial_w)
-            self.axial_pa.pack(fill=BOTH, expand=1)
+        self.spawn_popout()
+
+        print axial
+        self.popout_pa.plot_line(mesh, axial, xlabel="Normalized Axial Height",
+                                ylabel=set_name,
+                                label=fname+set_name)
+
+    def spawn_popout(self, axes="lin"):
+        print "Making a new popout window"
+        if self.popout_w is None:
+            self.popout_w = Toplevel()
+            self.popout_pa = PlotArea(self.popout_w, axes)
+            self.popout_pa.pack(fill=BOTH, expand=1)
             # Bind the window destruction protocol to the clear function
-            self.axial_w.protocol("WM_DELETE_WINDOW", self.kill_axial)
-        self.axial_pa.plot_line(mesh, axial, xlabel="Normalized Axial Height", label=fname+set_name)
+            self.popout_w.protocol("WM_DELETE_WINDOW", self.kill_popout)
 
-    def kill_spect(self):
-        self.spect_w.destroy()
-        self.spect_w = None
-
-    def kill_axial(self):
-        self.axial_w.destroy()
-        self.axial_w = None
+    def kill_popout(self):
+        self.popout_w.destroy()
+        self.popout_w = None
 
     def change_scale_mode(self):
         self.controls.update_scales()

@@ -17,7 +17,7 @@ import numpy
 
 
 class PlotArea(Frame):
-    def __init__(self, master):
+    def __init__(self, master, axes="lin"):
         Frame.__init__(self, master)
 
         self.label = StringVar()
@@ -28,7 +28,7 @@ class PlotArea(Frame):
 
         self.plot_frame = Frame(master=self)
         self.inner_frame = Frame(self.plot_frame)
-        self.reset()
+        self.reset(axes)
         self.plot_frame.pack(fill=BOTH, expand=1)
 
         # Set up things to plot polar stuff
@@ -39,11 +39,15 @@ class PlotArea(Frame):
         self.canvas_ang = FigureCanvasTkAgg(self.f_ang, master=self.ang_frame)
 
     # Wipe out whetever is currently in the figure
-    def reset(self):
+    def reset(self, axes="lin"):
         self.inner_frame.destroy()
         self.inner_frame = Frame(self.plot_frame)
         self.f = Figure()
-        self.a = self.f.add_subplot(111)
+        if axes == "lin":
+            self.a = self.f.add_subplot(111)
+        elif axes == "polar":
+            print "polar axes...?"
+            self.a = self.f.add_subplot(111, projection="polar")
         # self.a.set_xlabel("X Pin")
         # self.a.set_ylabel("Y Pin")
 

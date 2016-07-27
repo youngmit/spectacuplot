@@ -26,6 +26,8 @@ class PlotControls_3D(Frame):
                     value='spectra').pack(side=LEFT, anchor=W)
         Radiobutton(pick_mode_frame, text="Axial", variable=self.pick_mode,
                     value='axial').pack(side=LEFT, anchor=W)
+        Radiobutton(pick_mode_frame, text="Azimuthal", variable=self.pick_mode,
+                    value='azimuthal').pack(side=LEFT, anchor=W)
 
         # Axial Slider
         Label(slider_frame, text="Axial plane:").pack(anchor=W)
