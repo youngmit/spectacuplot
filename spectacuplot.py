@@ -15,11 +15,9 @@ from OpDiffPlot import *
 from OpSetPlot import *
 from OpSpectrumPlot import *
 
-def quit():
-    app.quit()
-    app.destroy()
 
-class App(Tk):
+
+class Spectacuplot(Tk):
     opened_files = []
     img = None
     cbar = None
@@ -67,8 +65,8 @@ class App(Tk):
         file_menu.add_cascade(label="Recent Files", menu=self.recent_cascade)
 
         # Set up stuff for quitting Spectacuplot
-        file_menu.add_command(label='Exit', command=quit)
-        self.protocol("WM_DELETE_WINDOW", quit)
+        file_menu.add_command(label='Exit', command=self.quit)
+        self.protocol("WM_DELETE_WINDOW", self.quit)
 
         self.bind_all("<Control-o>", self.open_dialog)
 
@@ -95,6 +93,9 @@ class App(Tk):
         nb.add(self.plot_set_tab, text="Plot Set")
         nb.add(self.diff_tab, text="Diff Sets")
 
+    def quit(self):
+        Tk.quit(self)
+        self.destroy()
 
     def open_dialog(self, event=""):
         file_name = askopenfilename()
@@ -135,10 +136,10 @@ class App(Tk):
     
 
 
-app = App()
-
-for i in xrange(1, len(sys.argv)):
-    app.open(sys.argv[i])
-
-
-app.mainloop()
+#app = Spectacuplot()
+#
+#for i in xrange(1, len(sys.argv)):
+#    app.open(sys.argv[i])
+#
+#
+#app.mainloop()
