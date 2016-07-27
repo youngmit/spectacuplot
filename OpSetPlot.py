@@ -64,19 +64,20 @@ class OpSetPlot(Frame):
     def pick(self, event):
         if not event.dblclick:
             return
+        pick_x = int(round(event.xdata))
+        pick_y = int(round(event.ydata))
+
         if self.controls.pick_mode.get() == 'spectra':
             self.add_spectrum(event)
         elif self.controls.pick_mode.get() == 'value':
-            x = int(event.xdata)
-            y = int(event.ydata)
             item = self.file_tree.tree.selection()[0]
             info = self.file_tree.tree.item(item)
             file_id = info['values'][0]
             set_path = info['values'][1]
 
             data = self.files[file_id].get_data_2d(set_path, self.current_plane)
-            index = self.nx*self.ny*(self.current_plane-1) + self.nx*y + x+1
-            print x, y, self.current_plane, index, data[y, x]
+            index = self.nx*self.ny*(self.current_plane-1) + self.nx*pick_y + pick_x+1
+            print pick_x, pick_y, self.current_plane, index, data[pick_y, pick_x]
         elif self.controls.pick_mode.get() == 'axial':
             self.add_axial(event)
 
@@ -105,8 +106,8 @@ class OpSetPlot(Frame):
         set_pfx = set_name.rsplit('/', 1)[0]
 
         # get the index of the region that was clicked
-        x = int(event.xdata)
-        y = int(event.ydata)
+        x = int(round(event.xdata))
+        y = int(round(event.ydata))
 
         spect = []
         for g in xrange(self.files[file_id].ng):
@@ -133,8 +134,8 @@ class OpSetPlot(Frame):
         set_name = info['values'][1]
 
         # get the index of the region that was clicked
-        x = int(event.xdata)
-        y = int(event.ydata)
+        x = int(round(event.xdata))
+        y = int(round(event.ydata))
         print "axial X/Y:", x, y
 
         axial = self.files[file_id].get_data(set_name)[:, y, x]
