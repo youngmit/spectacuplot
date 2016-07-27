@@ -30,7 +30,10 @@ class DataFileH5(DataFile):
         multidimensional, it will return the data as-is. If it appears to be a
         scalar, it will be returned as such.'''
 
-        data = self.f[data_id].value
+        try:
+            data = self.f[data_id].value
+        except:
+            raise StandardError("Could not read dataset: " + data_id)
         if numpy.ndim(data) == 1 and numpy.size(data) == 1:
             return data[0]
         else:
@@ -269,4 +272,37 @@ class DataFileSnVis(DataFileH5):
                 raise StandardError('There does not appear to be any energy ' +
                                     'structure information in this data file.')
 
+    def get_angles(self):
+        '''Returns an array containing the azimuthal angles of the angular
+        quadrature.
+        
+        For now, we make the wild assumption that this is a MOCC file, generated
+        using a 2D3D sweeper, and that we can grab the angles from 
+        /MoC/ang_quad/alpha. Super duper brittle.
+        '''
+        try:
+            n_polar = self.f['MoC/ang_quad/n_polar'].value
+            n_azi = self.f['MoC/ang_quad/n_azimuthal'].value * 4
+        except:
+            raise StandardError('Could not locate number of polar angles: '+
+            '"MoC/ang_quad/n_polar"')
+        try:
+            alpha = self.f['MoC/ang_quad/alpha'].value
+        except:
+            raise StandardError('Failed to locate azimuthal angles')
 
+        try:
+            theta = self.f['MoC/ang_quad/theta'].value
+        except:
+            raise StandardError('Could not read polar angles')
+        if (len(alpha)/2/n_polar) != n_azi:
+            raise StandardError('Wrong number of azimuthal angles')
+        azimuthal = numpy.zeros(n_azi)
+        for (iazi, ialpha) in enumerate(xrange(0, len(alpha)/2, n_polar)):
+            azimuthal[iazi] = alpha[ialpha]
+        polar = numpy.zeros(n_polar)
+        for ipol in xrange(n_polar):
+            polar[ipol] = theta[ipol] 
+        
+        return (azimuthal, polar)
+        

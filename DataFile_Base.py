@@ -63,6 +63,9 @@ class DataFile(object):
     def get_data(self, data_id):
         raise NotImplementedError('get_data() is not implemented by this data file type!')
 
+    def get_angles(self):
+        raise NotImplementedError('get_angles() is not implemented for this data file type!')
+
     def get_data_2d(self, data_id, plane=None):
         raise NotImplementedError('get_data_2d() is not implemented by this data file type!')
 
