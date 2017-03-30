@@ -1,5 +1,5 @@
-from ttk import *
-from Tkinter import *
+#from ttk import *
+from tkinter import *
 
 import matplotlib
 matplotlib.use('TkAgg')
@@ -46,7 +46,6 @@ class PlotArea(Frame):
         if axes == "lin":
             self.a = self.f.add_subplot(111)
         elif axes == "polar":
-            print "polar axes...?"
             self.a = self.f.add_subplot(111, projection="polar")
         # self.a.set_xlabel("X Pin")
         # self.a.set_ylabel("Y Pin")
@@ -64,11 +63,11 @@ class PlotArea(Frame):
         self.label.set(name)
         self.a.clear()
         if data.ndim == 3:
-            self.img = self.a.imshow(data[:, :, 0], interpolation="nearest",
-                                     origin="upper", vmin=min_, vmax=max_)
+            self.img = self.a.pcolormesh(data[:, :, 0], cmap="jet", edgecolors="face",
+                                     vmin=min_, vmax=max_)
         else:
-            self.img = self.a.imshow(data[:, :], interpolation="none",
-                                     origin="upper", vmin=min_, vmax=max_)
+            self.img = self.a.pcolormesh(data[:, :], cmap="jet", edgecolors="face",
+                                     vmin=min_, vmax=max_)
         if(self.cbar is None):
             self.cbar = self.f.colorbar(self.img)
         else:
@@ -105,7 +104,6 @@ class PlotArea(Frame):
         self.a.set_ylabel(ylabel)
 
     def set_log(self, logx, logy):
-        print logx, logy
         if logx:
             self.a.set_xscale('log')
         else:
@@ -119,7 +117,6 @@ class PlotArea(Frame):
         self.canvas.get_tk_widget().pack(fill=BOTH, expand=1)
 
     def plot_angle(self, data):
-        print data
         azi_x = math.cos(data[0])
         azi_y = math.sin(data[0])
         pol_x = 1.0*numpy.sign(azi_x)

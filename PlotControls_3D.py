@@ -1,4 +1,4 @@
-from Tkinter import *
+from tkinter import *
 
 from AxialSlider import *
 from LabeledEntry import *
@@ -9,6 +9,8 @@ class PlotControls_3D(Frame):
 
         pick_mode_frame = Frame(self)
         pick_mode_frame.pack(side=TOP)
+
+        
 
         slider_frame = Frame(self)
         slider_frame.pack(side=TOP, fill=BOTH)
@@ -26,8 +28,16 @@ class PlotControls_3D(Frame):
                     value='spectra').pack(side=LEFT, anchor=W)
         Radiobutton(pick_mode_frame, text="Axial", variable=self.pick_mode,
                     value='axial').pack(side=LEFT, anchor=W)
-        Radiobutton(pick_mode_frame, text="Azimuthal", variable=self.pick_mode,
-                    value='azimuthal').pack(side=LEFT, anchor=W)
+        azimuthal_frame = Frame(pick_mode_frame)
+        azimuthal_frame.pack(side=LEFT, anchor=W)
+
+        Radiobutton(azimuthal_frame, text="Azimuthal", variable=self.pick_mode,
+                    value='azimuthal').pack(side=TOP, anchor=W)
+        self.polar_angle_var = StringVar(self)
+        self.polar_angle_var.set("1")
+        OptionMenu(azimuthal_frame, self.polar_angle_var, "1", "2", "3").pack(side=TOP)
+
+
 
         # Axial Slider
         Label(slider_frame, text="Axial plane:").pack(anchor=W)

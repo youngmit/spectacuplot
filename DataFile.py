@@ -15,16 +15,16 @@ def OpenDataFile(name):
         f = None
         for s in h5f.keys():
             if s == 'CORE':
-                print "MPACT Pin Power File"
+                print("MPACT Pin Power File")
                 f = DataFilePinPower(name)
                 break
 
         if f is None:
             # For now we are treating the MPACT Sn Vis file as the fallback.
             # Should use a more robust way of determining that it is valid.
-            print "MPACT Sn Vis file"
+            print("MPACT Sn Vis file")
             f = DataFileSnVis(name)
     elif ext == "vtk":
-        print "VTK files"
+        print("VTK files")
 
     return f

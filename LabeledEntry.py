@@ -1,5 +1,4 @@
-from ttk import *
-from Tkinter import *
+from tkinter import *
 
 # This is a little GUI widget that has a text box for user input and a label,
 # indicating the purpose of the text box. The widget can be enabled and disabled

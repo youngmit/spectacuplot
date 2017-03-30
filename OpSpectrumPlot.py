@@ -1,4 +1,4 @@
-from Tkinter import *
+from tkinter import *
 
 from PlotArea import *
 
@@ -20,4 +20,4 @@ class OpSpectrumPlot(Frame):
         self.tree.update(files)
 
     def plot(self):
-        print "plotting"
+        print("plotting")

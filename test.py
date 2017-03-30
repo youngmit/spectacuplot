@@ -8,7 +8,7 @@ from numpy import arange, sin, pi
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2TkAgg
 from matplotlib.figure import Figure
 
-import Tkinter as Tk
+import tkinter as Tk
 import sys
 
 root = Tk.Tk()

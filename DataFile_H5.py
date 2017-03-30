@@ -79,8 +79,8 @@ class DataFilePinPower(DataFileH5):
         # rows.
         rows = []
         if(self.sym == 4):
-            for row in xrange(core_shape[0]):
-                l_flip_y = False
+            for row in range(core_shape[0]):
+                l_flip_y = True
                 if row < core_shape[0]/2:
                     l_flip_y = True
                 row_data = []
@@ -101,7 +101,7 @@ class DataFilePinPower(DataFileH5):
             data = numpy.hstack((rows))
 
         else:
-            for row in xrange(core_shape[0]):
+            for row in range(core_shape[0]):
                 row_data = []
                 for assem in self.core_map[row]:
                     if assem > 0:
@@ -141,6 +141,7 @@ class DataFileSnVis(DataFileH5):
 
         if self.f.attrs.get('noflip') == 1:
             self.flip_y = False
+        self.flip_y = True
 
         for n in self.set_names:
             if n == 'proc_map':
@@ -175,7 +176,7 @@ class DataFileSnVis(DataFileH5):
         if self.composite:
             # Blob all of the data together
             sub_data = []
-            for f in xrange(self.n_proc):
+            for f in range(self.n_proc):
                 fname = self.path[:len(self.path)-3]
                 fname = fname + '_n' + str(f) + '.h5'
                 f = DataFileSnVis(fname)
@@ -184,7 +185,7 @@ class DataFileSnVis(DataFileH5):
             # for now, flatten the proc_map to a 2d thing
             proc_map = self.proc_map[0]
             rows = []
-            for row in xrange(proc_map.shape[1]):
+            for row in range(proc_map.shape[1]):
                 row_data = []
                 for node in proc_map[row]:
                     row_data.append(sub_data[node])
@@ -278,30 +279,30 @@ class DataFileSnVis(DataFileH5):
         
         For now, we make the wild assumption that this is a MOCC file, generated
         using a 2D3D sweeper, and that we can grab the angles from 
-        /MoC/ang_quad/alpha. Super duper brittle.
+        /ang_quad/alpha. Super duper brittle.
         '''
         try:
-            n_polar = self.f['MoC/ang_quad/n_polar'].value
-            n_azi = self.f['MoC/ang_quad/n_azimuthal'].value * 4
+            n_polar = self.f['/ang_quad/n_polar'].value[0]
+            n_azi = self.f['/ang_quad/n_azimuthal'].value * 4
         except:
             raise StandardError('Could not locate number of polar angles: '+
-            '"MoC/ang_quad/n_polar"')
+            '"/ang_quad/n_polar"')
         try:
-            alpha = self.f['MoC/ang_quad/alpha'].value
+            alpha = self.f['/ang_quad/alpha'].value
         except:
             raise StandardError('Failed to locate azimuthal angles')
 
         try:
-            theta = self.f['MoC/ang_quad/theta'].value
+            theta = self.f['/ang_quad/theta'].value
         except:
             raise StandardError('Could not read polar angles')
         if (len(alpha)/2/n_polar) != n_azi:
             raise StandardError('Wrong number of azimuthal angles')
         azimuthal = numpy.zeros(n_azi)
-        for (iazi, ialpha) in enumerate(xrange(0, len(alpha)/2, n_polar)):
+        for (iazi, ialpha) in enumerate(range(0, int(len(alpha)/2), n_polar)):
             azimuthal[iazi] = alpha[ialpha]
         polar = numpy.zeros(n_polar)
-        for ipol in xrange(n_polar):
+        for ipol in range(n_polar):
             polar[ipol] = theta[ipol] 
         
         return (azimuthal, polar)

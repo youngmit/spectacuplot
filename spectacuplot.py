@@ -6,8 +6,9 @@ import sys
 import os
 import functools
 
-from Tkinter import *
-from tkFileDialog import askopenfilename
+from tkinter import *
+from tkinter.ttk import Notebook
+from tkinter.filedialog import askopenfilename
 
 from PlotArea import *
 
@@ -55,7 +56,7 @@ class Spectacuplot(Tk):
                 self.recent_commands.append(functools.partial(self.open, f.strip()))
             recent_files.close()
         except:
-            print "no recent files"
+            print("no recent files")
 
         self.recent_cascade = Menu(file_menu)
 
@@ -105,7 +106,7 @@ class Spectacuplot(Tk):
         self.open(value)
 
     def open(self, file_name):
-        print "opening: ", file_name
+        print("opening: ", file_name)
         f = OpenDataFile(file_name)
         self.opened_files.append(f)
         self.plot_set_tab.update(self.opened_files)
@@ -119,9 +120,9 @@ class Spectacuplot(Tk):
             if len(self.recent) > 5:
                 self.recent.pop()
         # poop out to a file
-        recent_files = file(os.path.expanduser("~/spectacuplot_recent"), "w")
+        recent_files = open(os.path.expanduser("~/spectacuplot_recent"), "w")
         for f in self.recent:
-            print f
+            print(f)
             recent_files.write(f + '\n')
         recent_files.close()
 

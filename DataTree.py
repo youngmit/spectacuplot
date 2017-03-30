@@ -1,5 +1,5 @@
-from ttk import *
-from Tkinter import *
+from tkinter import *
+from tkinter.ttk import Treeview
 
 from DataFile import *
 

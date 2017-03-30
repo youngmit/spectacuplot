@@ -1,4 +1,4 @@
-from Tkinter import *
+from tkinter import *
 
 from PlotArea import *
 from AxialSlider import *
@@ -155,8 +155,7 @@ class OpDiffPlot(Frame):
         avg = calc_avg(data1, data2)
         mre = calc_mre(data1, data2)
 
-        # print "RMS % \t AVG % \t MRE %"
-        print rms, "\t", avg, "\t", mre
+        print(rms, "\t", avg, "\t", mre)
 
         self.rmsVar.set('RMS Error: ' + str(rms))
 
@@ -181,8 +180,8 @@ def collapse_data(data1, data2):
     # homogenize data1
     ratio = width_1/g1
     data1h = numpy.zeros([g1, g2])
-    for i in xrange(shape_1[0]):
-        for j in xrange(shape_1[1]):
+    for i in range(shape_1[0]):
+        for j in range(shape_1[1]):
             row = i/ratio
             col = j/ratio
             data1h[row, col] = data1h[row, col] + data1[i, j]
@@ -190,8 +189,8 @@ def collapse_data(data1, data2):
     # homogenize data2
     ratio = width_2/g1
     data2h = numpy.zeros([g1, g2])
-    for i in xrange(shape_2[0]):
-        for j in xrange(shape_2[1]):
+    for i in range(shape_2[0]):
+        for j in range(shape_2[1]):
             row = i/ratio
             col = j/ratio
             data2h[row, col] = data2h[row, col] + data2[i, j]

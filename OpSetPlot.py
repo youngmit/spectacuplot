@@ -1,4 +1,4 @@
-from Tkinter import *
+from tkinter import *
 
 from PlotArea import *
 
@@ -76,7 +76,9 @@ class OpSetPlot(Frame):
 
             data = self.files[file_id].get_data_2d(set_path, self.current_plane)
             index = self.nx*self.ny*(self.current_plane-1) + self.nx*pick_y + pick_x+1
-            print pick_x, pick_y, self.current_plane, index, data[pick_y, pick_x]
+            print(pick_x, pick_y, self.current_plane, index, data[pick_y, pick_x])
+            self.scalarVar.set("Value at (" + str(pick_x) + ", " + str(pick_y)
+                + "): " + str(data[pick_y, pick_x]))
         elif self.controls.pick_mode.get() == 'axial':
             self.add_axial(event)
         elif self.controls.pick_mode.get() == 'azimuthal':
@@ -85,6 +87,10 @@ class OpSetPlot(Frame):
     def add_azimuthal(self, event):
         pick_x = int(round(event.xdata))
         pick_y = int(round(event.ydata))
+
+        # Determine which polar angle we want
+        i_polar = int(self.controls.polar_angle_var.get())-1
+        print("plotting polar angle ", i_polar)
         
         item = self.file_tree.tree.selection()[0]
         info = self.file_tree.tree.item(item)
@@ -97,7 +103,7 @@ class OpSetPlot(Frame):
         base_path = ""
         for s in path_decomp:
             base_path += s + "/"
-        print base_path
+        print(base_path)
         
         # get angles
         (azimuthal, polar) = self.files[file_id].get_angles()
@@ -110,7 +116,7 @@ class OpSetPlot(Frame):
 
         file = self.files[file_id]
 
-        for (i, idata) in enumerate(xrange(0, n_polar*n_azi, n_polar)):
+        for (i, idata) in enumerate(range(i_polar, n_polar*n_azi, n_polar)):
             path = base_path + str(idata).zfill(3)
             values[i] = file.get_data_2d(path, self.current_plane)[pick_y, pick_x]
         
@@ -132,10 +138,10 @@ class OpSetPlot(Frame):
         try:
             erg = self.files[file_id].get_erg()
         except NotImplementedError:
-            print 'The data file type apparently does not support spectra.'
+            print('The data file type apparently does not support spectra.')
             return
         except:
-            print 'Failed to get energy bounds. Are they present?'
+            print('Failed to get energy bounds. Are they present?')
             return
         erg_w = []
         prev_e = 0.0
@@ -153,7 +159,7 @@ class OpSetPlot(Frame):
         y = int(round(event.ydata))
 
         spect = []
-        for g in xrange(self.files[file_id].ng):
+        for g in range(self.files[file_id].ng):
             g_name = set_pfx + "/" + str(g+1).zfill(3)
             data = self.files[file_id].get_data(g_name)
             spect.append(data[self.current_plane-1][y][x]*erg[g]/erg_w[g])
@@ -174,7 +180,7 @@ class OpSetPlot(Frame):
         # get the index of the region that was clicked
         x = int(round(event.xdata))
         y = int(round(event.ydata))
-        print "axial X/Y:", x, y
+        print("axial X/Y:", x, y)
 
         axial = self.files[file_id].get_data(set_name)[:, y, x]
         fname = self.files[file_id].name
@@ -184,13 +190,13 @@ class OpSetPlot(Frame):
 
         self.spawn_popout()
 
-        print axial
+        print(axial)
         self.popout_pa.plot_line(mesh, axial, xlabel="Normalized Axial Height",
                                 ylabel=set_name,
                                 label=fname+set_name)
 
     def spawn_popout(self, axes="lin"):
-        print "Making a new popout window"
+        print("Making a new popout window")
         if self.popout_w is None:
             self.popout_w = Toplevel()
             self.popout_pa = PlotArea(self.popout_w, axes)
@@ -310,7 +316,7 @@ class OpSetPlot(Frame):
                 abscissae = range(len(data))
             label = self.files[file_id].name + ": " + (set_path.split("/")[-1])
             y_label = set_path.split("/")[-1]
-            self.plot_area.plot_line(abscissae, data, label=label, xlabel=x_label, ylabel=y_label)
+            self.plot_area.plot_line(abscissae, data, label=label, xlabel="Time (sec)", ylabel="Fission source residual")
 
 
     def update(self, files):

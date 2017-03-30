@@ -1,4 +1,4 @@
-from Tkinter import *
+from tkinter import *
 
 class PlotControls_1D(Frame):
     def __init__(self, master, consumer):
